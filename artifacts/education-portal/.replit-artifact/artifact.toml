@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Portail Éducation nationale"
+description = "Une page d’accueil institutionnelle inspirée du portail de l’Éducation nationale, avec actualités, démarches scolaires, services aux personnels, recherche, navigation responsive et gestion des cookies."
+version = "1.0.0"
+id = "artifacts/education-portal"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26270
+
+[services.development]
+run = "pnpm --filter @workspace/education-portal run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/education-portal", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/education-portal/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26270"
+BASE_PATH = "/"
