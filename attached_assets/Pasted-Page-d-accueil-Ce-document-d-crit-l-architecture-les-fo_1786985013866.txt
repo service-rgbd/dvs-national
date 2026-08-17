@@ -1,0 +1,644 @@
+Page d’accueil
+Ce document décrit l’architecture, les fonctionnalités, les contenus et les exigences UX/UI observables sur la page d’accueil du site du Ministère de l’Éducation nationale. La page est conçue comme un portail institutionnel : elle oriente les citoyens, familles, élèves et personnels vers l’information, les démarches et les actualités prioritaires.
+
+Objectif du site
+Le site doit remplir quatre objectifs principaux :
+
+Informer le grand public sur les politiques, actualités et services de l’Éducation nationale.
+
+Donner un accès rapide aux démarches fréquentes : calendrier scolaire, bourses, annuaire, orientation, contacts, etc.
+
+Mettre en avant les priorités éditoriales et campagnes nationales via un contenu de type magazine.
+
+Servir les publics internes, notamment les enseignants et personnels de l’administration, avec des accès métier et RH.
+
+Publics cibles
+Public	Besoins principaux
+Parents et responsables légaux	Calendrier scolaire, bourses, fournitures, scolarité, santé, harcèlement
+Élèves et jeunes	Orientation, préparation du bac, actions éducatives, bien-être
+Enseignants et personnels	Rémunération, carrière, mobilité, formation, protection sociale
+Journalistes et partenaires	Espace presse, publications, données et rapports
+Citoyens	Comprendre les politiques éducatives, trouver les contacts et établissements
+Personnes en situation de handicap	Navigation accessible, déclaration d’accessibilité, solution téléphonique dédiée
+Architecture globale
+La page doit être structurée dans l’ordre suivant :
+
+Gestion du consentement aux cookies.
+
+Liens d’évitement pour l’accessibilité.
+
+Header institutionnel.
+
+Zone de recherche et menu principal.
+
+Hero éditorial mis en avant.
+
+Bloc d’actualités « À la une ».
+
+Bloc de services destinés aux familles et élèves.
+
+Bloc saisonnier ou contextuel, ici consacré à la rentrée.
+
+Bloc dédié aux personnels de l’Éducation nationale.
+
+Bloc d’actions éducatives et expériences pédagogiques.
+
+Bloc de contacts.
+
+Liens vers les réseaux sociaux.
+
+Footer éditorial avec sites partenaires, organismes, rapports et données.
+
+Footer légal et institutionnel.
+
+Bandeau cookies
+Avant l’accès complet à la page, un panneau de gestion des cookies doit être affiché.
+
+Contenu requis
+Le panneau présente :
+
+Un titre de bienvenue.
+
+Une explication sur les finalités des cookies : mesure d’audience, amélioration du fonctionnement, évaluation des campagnes et services partenaires.
+
+Une information sur la durée de conservation du choix, fixée à 13 mois.
+
+Un lien vers la page relative aux données personnelles et cookies.
+
+Trois actions distinctes : Tout accepter, Tout refuser et Personnaliser.
+
+Exigences UX
+Le consentement doit être explicite pour les cookies non essentiels.
+
+Les actions doivent être lisibles, accessibles au clavier et suffisamment espacées sur mobile.
+
+Le refus doit être aussi simple que l’acceptation.
+
+L’utilisateur doit pouvoir modifier ultérieurement son choix depuis le footer, via le lien « Gestion des cookies ».
+
+Liens d’évitement
+Tout en haut du document, des liens d’accès rapide doivent être disponibles pour les utilisateurs de clavier et de lecteurs d’écran.
+
+Liens à prévoir
+Accéder au contenu principal.
+
+Accéder au menu.
+
+Accéder à la recherche.
+
+Accéder au pied de page.
+
+Exigences techniques
+Ces liens doivent être masqués visuellement au repos, mais devenir immédiatement visibles au focus clavier.
+
+Chaque lien doit pointer vers un identifiant unique et valide : #main-content, #page-header--menu, #search-block-form et #footer.
+
+Le focus après activation doit arriver sur une zone réellement exploitable.
+
+Header institutionnel
+Le header doit porter l’identité visuelle officielle du ministère et rester sobre, administratif et immédiatement reconnaissable.
+
+Éléments obligatoires
+Logo ou bloc typographique : « Ministère de l’Éducation nationale ».
+
+Lien de retour vers la page d’accueil.
+
+Action « Rechercher ».
+
+Action « Menu ».
+
+Comportement attendu
+Le logo est cliquable et redirige vers l’accueil.
+
+Le bouton de recherche ouvre un champ ou panneau de recherche.
+
+Le bouton de menu ouvre la navigation principale, probablement sous forme de panneau latéral ou mégamenu selon le breakpoint.
+
+Sur mobile, le header doit prioriser le logo et les actions essentielles, avec une navigation repliée.
+
+Recommandations frontend
+Utiliser l’élément HTML <header>.
+
+Utiliser un bouton natif pour ouvrir/fermer menu et recherche.
+
+Ajouter aria-expanded, aria-controls et des libellés accessibles.
+
+Bloquer le défilement arrière-plan lorsqu’un menu plein écran est ouvert sur mobile.
+
+Prévoir une fermeture par touche Escape, clic extérieur et bouton de fermeture explicite.
+
+Recherche
+La recherche est une entrée de navigation fondamentale, visible depuis le header.
+
+Fonctionnalités attendues
+Un champ de saisie avec un libellé explicite.
+
+Un bouton de validation.
+
+Une recherche plein texte sur les contenus éditoriaux et les pages de services.
+
+Une page de résultats avec titre, extrait, date éventuelle, catégorie et URL.
+
+Une conservation de la requête dans l’URL, par exemple ?search=....
+
+Exigences UX
+Mettre le focus automatiquement dans le champ à l’ouverture.
+
+Afficher une aide de saisie courte, par exemple : « Rechercher une information, une démarche ou un contact ».
+
+Gérer les recherches sans résultat avec suggestions ou accès aux rubriques prioritaires.
+
+Supporter correctement les accents, apostrophes et requêtes françaises.
+
+Hero éditorial
+Le premier grand contenu de la page est une mise en avant éditoriale principale.
+
+Contenu observé
+La page présente un article vedette intitulé « Inciter les jeunes à voyager par l’imaginaire », accompagné d’un texte descriptif et d’un appel à l’action « Lire l’article ». Le sujet valorise la lecture pendant la période estivale.
+
+Composition recommandée
+Grand visuel éditorial ou illustration dans une colonne.
+
+Zone texte dans une seconde colonne.
+
+Surtitre facultatif : campagne, thématique ou période.
+
+Titre de niveau h1.
+
+Chapô court.
+
+Bouton ou lien clairement identifiable.
+
+Contraste renforcé entre texte, fond et bouton.
+
+Responsive
+Desktop : mise en page en deux colonnes, image dominante et texte éditorial.
+
+Mobile : image puis texte ou texte puis image selon priorité de lecture.
+
+Le lien d’action doit conserver une zone tactile minimale de 44 × 44 px.
+
+Bloc « À la une »
+Cette section regroupe les actualités prioritaires du ministère.
+
+Contenus affichés
+Les contenus éditoriaux comprennent notamment :
+
+« Sciences : ouvrir la voie avec Elsa Lubek ».
+
+« Priorités pour l’année scolaire 2026-2027 ».
+
+« Rapport 2025 de la médiatrice de l’Éducation nationale et de l’Enseignement supérieur ».
+
+« Agir pour la santé mentale des enfants et des jeunes ».
+
+Structure fonctionnelle
+Chaque carte ou item d’actualité doit comporter :
+
+Un titre cliquable.
+
+Un résumé éditorial.
+
+Un lien vers l’article complet.
+
+Facultativement : image, catégorie, date de publication et durée de lecture.
+
+Une hiérarchie de titre cohérente, avec h2 pour la section et h3 pour chaque article.
+
+Exigences UX/UI
+Utiliser une grille de cartes responsive : quatre colonnes larges, deux colonnes intermédiaires, une colonne mobile.
+
+Garantir des hauteurs visuelles cohérentes sans couper les titres de manière inaccessible.
+
+Toute la carte peut être cliquable, mais le lien doit rester explicite pour les technologies d’assistance.
+
+Prévoir un état hover, focus-visible et actif cohérent avec la charte institutionnelle.
+
+Bloc « L’éducation nationale et vous »
+Cette zone sert de hub de services grand public.
+
+Liens prioritaires
+Les thèmes visibles sont :
+
+Le calendrier scolaire.
+
+Les bourses de collège et de lycée.
+
+La lutte contre le harcèlement.
+
+La préparation du bac et l’orientation.
+
+La santé et le bien-être des élèves.
+
+Les élèves à besoins éducatifs particuliers.
+
+Objectif UX
+L’utilisateur doit pouvoir identifier son besoin en quelques secondes, sans devoir naviguer dans une arborescence complexe.
+
+Format recommandé
+Titre de section h2.
+
+Grille de six cartes, pictogrammes facultatifs mais utiles.
+
+Titres courts et orientés besoin.
+
+Cartes cliquables avec zone interactive complète.
+
+Possibilité de filtrer ou de compléter par un lien « Voir tous les services », si l’offre s’élargit.
+
+Bloc « Préparer la rentrée »
+Cette section est contextuelle et saisonnière. Elle doit pouvoir changer selon le calendrier annuel : rentrée, examens, vacances, inscriptions ou orientation.
+
+Cartes affichées
+L’allocation de rentrée scolaire.
+
+Le calendrier scolaire.
+
+Faire sa demande de bourse.
+
+Les fournitures scolaires.
+
+Exigences éditoriales
+Le titre de section doit être administrable depuis le CMS.
+
+L’ordre des cartes doit être configurable.
+
+Chaque carte doit contenir titre, texte d’introduction et lien.
+
+Les contenus doivent pouvoir être activés ou désactivés selon la période de l’année.
+
+Exigences UX
+Mettre en avant les démarches les plus urgentes.
+
+Ajouter un repère visuel de temporalité si nécessaire : « À faire avant le… », « Ouverture des demandes », « Dates importantes ».
+
+Éviter les blocs trop textuels : le contenu doit être scannable par un parent pressé.
+
+Bloc « Personnels »
+Cette section s’adresse explicitement aux agents et professionnels de l’Éducation nationale.
+
+Contenu principal
+Le contenu d’ouverture concerne le réseau des conseillers ressources humaines de proximité, présenté comme un service d’information et d’accompagnement professionnel personnalisé et confidentiel.
+
+Liens complémentaires
+Protection sociale complémentaire.
+
+Rémunération des enseignants.
+
+I-Prof, assistant carrière.
+
+Missions et métiers des enseignants.
+
+Portail mobilité des enseignants.
+
+Programme national de formation 2026-2027.
+
+Structure recommandée
+Une carte principale, visuellement plus forte.
+
+Une liste ou grille de six accès secondaires.
+
+Un niveau de lecture clair entre accompagnement RH, carrière, rémunération, mobilité et formation.
+
+Des CTA explicites, sans formulations vagues du type « En savoir plus » isolées.
+
+Bloc « Des expériences qui forment »
+Cette zone met en valeur les actions pédagogiques, projets de classe et initiatives éducatives.
+
+Introduction
+Le texte présente des projets liés notamment au théâtre, à la lecture, au cinéma, aux langues et aux sciences, puis propose un lien global vers l’ensemble des actions éducatives.
+
+Articles mis en avant
+« Septembre Bouge : l’activité physique et sportive à l’honneur à la rentrée ».
+
+« La compétition des métiers WorldSkills ».
+
+Une ressource autour des masterclasses de cinéma et de la découverte de grands films.
+
+Exigences de conception
+Créer une zone éditoriale plus inspirante que les blocs de démarches.
+
+Employer des visuels riches, authentiques et diversifiés, avec textes alternatifs pertinents.
+
+Prévoir une carte ou bannière d’introduction avec CTA « Voir toutes les actions éducatives ».
+
+Afficher ensuite une grille de trois contenus sélectionnés.
+
+Bloc « Nous contacter »
+Cette section doit permettre de trouver rapidement le bon interlocuteur selon le motif de contact.
+
+Entrées disponibles
+Les établissements.
+
+Le ministre.
+
+Le médiateur.
+
+Le délégué à la protection des données.
+
+Les académies.
+
+Scolarité, diplômes, examens, orientation.
+
+Concours, emplois, carrières.
+
+Autres contacts.
+
+Exigences fonctionnelles
+Chaque entrée doit renvoyer vers une page de contact spécialisée, non vers un formulaire générique par défaut.
+
+L’annuaire des établissements doit intégrer une recherche par nom, ville, code postal et académie.
+
+Les formulaires de contact doivent préciser les délais indicatifs, les données collectées et l’usage des informations.
+
+Les coordonnées sensibles ou spécifiques doivent être structurées pour une lecture mobile rapide.
+
+Réseaux sociaux
+La page inclut un bloc de présence sociale intitulé « Suivez-nous sur les réseaux sociaux ».
+
+Réseaux référencés
+Instagram.
+
+Facebook.
+
+TikTok.
+
+LinkedIn.
+
+X.
+
+YouTube.
+
+Bluesky.
+
+Exigences UX et accessibilité
+Afficher un pictogramme et un libellé textuel accessible.
+
+Indiquer lorsqu’un lien ouvre une plateforme externe.
+
+Ouvrir dans le même onglet par défaut, sauf besoin éditorial ou juridique contraire.
+
+Ne pas dépendre uniquement de la couleur ou du logo pour identifier chaque réseau.
+
+Ajouter rel="noopener noreferrer" aux liens ouverts dans un nouvel onglet.
+
+Footer éditorial
+Le premier niveau du footer centralise les liens institutionnels externes et les ressources de référence.
+
+Colonne « Sites Éducation »
+Le footer doit inclure notamment des accès vers :
+
+Devenir enseignant.
+
+Éduscol.
+
+Onisep.
+
+Cned.
+
+Réseau Canopé.
+
+CLEMI.
+
+France Éducation international.
+
+Institut des hautes études de l’éducation et de la formation.
+
+Enseignement supérieur et Recherche.
+
+Sites académiques.
+
+Céreq.
+
+Colonne « Rapports, publications et statistiques »
+Les liens doivent diriger vers :
+
+Data.education.gouv.fr.
+
+Conseil d’évaluation de l’École.
+
+Conseil supérieur des programmes.
+
+Direction de l’évaluation, de la prospective et de la performance.
+
+Inspection générale de l’éducation, du sport et de la recherche.
+
+Exigences UI
+Présenter les groupes de liens en colonnes sur desktop et en accordéons sur mobile.
+
+Garder les intitulés explicites, sans tronquer les noms d’institutions.
+
+Prévoir un contraste élevé et un comportement de focus nettement visible.
+
+Distinguer visuellement les liens internes du site et les sites externes si la charte le permet.
+
+Footer institutionnel et légal
+Le bas de page doit rappeler l’identité du ministère puis concentrer les liens réglementaires, administratifs et techniques.
+
+Éléments attendus
+Logo ou signature « Ministère de l’Éducation nationale ».
+
+Espace presse.
+
+Contactez-nous.
+
+Liens vers Légifrance, Service-Public.fr, Info.gouv.fr et Data.gouv.fr.
+
+Contact.
+
+Mentions légales.
+
+Données personnelles et cookies.
+
+Gestion des cookies.
+
+Déclaration d’accessibilité : « partiellement conforme ».
+
+Accessibilité téléphonique pour les personnes sourdes ou malentendantes.
+
+Documents opposables.
+
+Mention de licence
+Le footer doit préciser que les contenus sont, sauf mention contraire, publiés sous licence Etalab 2.0.
+
+Exigences d’accessibilité
+Le site doit viser a minima la conformité au RGAA, avec une attention particulière aux points suivants :
+
+Une structure sémantique : <header>, <nav>, <main>, <section>, <aside> si nécessaire et <footer>.
+
+Une hiérarchie unique et logique des titres, avec un seul h1.
+
+Des liens d’évitement présents dès le début du DOM.
+
+Une navigation complète au clavier.
+
+Des indicateurs de focus visibles.
+
+Des alternatives textuelles pertinentes pour chaque image informative.
+
+Des boutons identifiables sans dépendre d’une icône seule.
+
+Un contraste suffisant pour textes, icônes, boutons et états interactifs.
+
+Des formulaires associés à de vrais <label>.
+
+Un comportement cohérent des composants dynamiques avec lecteurs d’écran.
+
+Une déclaration d’accessibilité et un canal alternatif pour les personnes sourdes ou malentendantes.
+
+Responsive design
+Mobile
+Header compact avec menu et recherche sous forme de boutons.
+
+Une seule colonne de cartes.
+
+Sections espacées et facilement scannables.
+
+Footer transformé en accordéons.
+
+Cibles tactiles d’au moins 44 × 44 px.
+
+Aucun contenu essentiel uniquement disponible au survol.
+
+Tablette
+Deux colonnes pour la plupart des grilles éditoriales.
+
+Hiérarchie renforcée entre hero, actualités et services.
+
+Menus éventuellement affichés sous forme de panneau.
+
+Desktop
+Conteneur central avec largeur maximale cohérente.
+
+Grilles de trois ou quatre cartes selon le type de contenu.
+
+Hero en deux colonnes.
+
+Footer multi-colonnes.
+
+Espaces verticaux généreux pour faciliter la lecture institutionnelle.
+
+Composants à prévoir
+Composant	Usage
+Bandeau cookies	Recueil et gestion du consentement
+Header	Identité, recherche et navigation
+Menu responsive	Accès à l’arborescence complète
+Champ de recherche	Recherche plein texte
+Hero éditorial	Mise en avant d’une campagne ou d’un article
+Carte actualité	Actualités et contenus magazine
+Carte service	Accès rapide à une démarche ou information
+Carte thématique	Rentrée, personnels, actions éducatives
+Liste de liens	Contacts, partenaires, institutions
+Bloc réseaux sociaux	Redirection vers plateformes externes
+Footer accordéon	Adaptation mobile des groupes de liens
+Gestionnaire de cookies	Modification du consentement depuis le footer
+Modèle de données CMS
+Chaque contenu éditorial doit pouvoir être piloté depuis un CMS.
+
+Type : Article
+Titre.
+
+Slug et URL.
+
+Résumé.
+
+Corps de contenu.
+
+Image principale.
+
+Texte alternatif de l’image.
+
+Date de publication.
+
+Date de mise à jour.
+
+Catégorie.
+
+Étiquettes.
+
+Auteur ou service émetteur.
+
+Statut : brouillon, programmé, publié, archivé.
+
+Mise en avant possible sur la page d’accueil.
+
+Type : Carte de service
+Titre.
+
+Description courte facultative.
+
+URL interne ou externe.
+
+Icône facultative.
+
+Audience cible.
+
+Thématique.
+
+Ordre d’affichage.
+
+Période de publication.
+
+État actif/inactif.
+
+Type : Section d’accueil
+Titre.
+
+Introduction.
+
+Type d’affichage : cartes, liste, feature + liste, bannière.
+
+Contenus associés.
+
+Ordre.
+
+Dates de validité.
+
+Thème visuel éventuel.
+
+Exigences techniques
+Produire un HTML sémantique et valide.
+
+Optimiser les images avec formats modernes, par exemple AVIF ou WebP, tout en gardant des alternatives compatibles.
+
+Charger les images non critiques en lazy loading.
+
+Réserver l’espace image pour limiter les décalages de mise en page.
+
+Réduire le JavaScript au nécessaire ; le contenu essentiel doit rester accessible sans JavaScript.
+
+Mettre en cache les ressources statiques.
+
+Mettre en place une stratégie SEO : balise title, meta description, Open Graph, données structurées Organization, GovernmentOrganization, Article et fil d’Ariane si applicable.
+
+Suivre les performances Core Web Vitals : LCP optimisé sur le hero, CLS minimal, INP faible.
+
+Ne déclencher les tags de mesure d’audience non essentiels qu’après consentement.
+
+Critères de recette
+Le projet peut être considéré comme conforme lorsque :
+
+L’utilisateur peut accéder à toutes les rubriques principales depuis le header, les cartes de contenu et le footer.
+
+Chaque contenu de la page d’accueil dirige vers une URL fonctionnelle et pertinente.
+
+Le bandeau cookies permet d’accepter, refuser ou personnaliser les choix.
+
+La navigation est possible entièrement au clavier.
+
+Les liens d’évitement fonctionnent et amènent sur les zones annoncées.
+
+L’affichage reste cohérent sur mobile, tablette et desktop.
+
+Les sections éditoriales peuvent être mises à jour sans modification du code.
+
+Les contenus sont compréhensibles pour les familles, élèves et personnels.
+
+Les liens légaux, contacts, accessibilité et gestion des cookies restent accessibles dans le footer.
+
+La page met clairement en avant actualités, démarches scolaires, services aux personnels, actions éducatives et canaux de contact.
+
+
+Ministère de l'Éducation nationale - Accueil | Ministère de l'Education nationale
+
+
