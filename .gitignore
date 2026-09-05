@@ -47,3 +47,14 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Import reports (generated)
+artifacts/import-reports/
+
+# Fichiers uploadés (local / éphémère Render)
+uploads/

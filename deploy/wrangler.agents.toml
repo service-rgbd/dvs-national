@@ -1,0 +1,7 @@
+# Espace agents PNIGVS (login + application métier /app)
+name = "pnigvs-agents"
+compatibility_date = "2025-09-01"
+pages_build_output_dir = "../artifacts/education-portal/dist/public"
+
+[vars]
+VITE_PORTAL_SURFACE = "agents"

@@ -1,0 +1,279 @@
+/**
+ * Tableau de bord — refonte visuelle (accueil métier).
+ * Surcharge les styles legacy de app-dashboard.css pour un rendu plus lisible.
+ */
+
+.dash-v2--home {
+  gap: 1.25rem;
+}
+
+.dash-page-title--home {
+  margin-top: 0.25rem;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+}
+
+.dash-page-header--dashboard {
+  padding: 0.25rem 0 0.5rem;
+}
+
+.dash-page-header--dashboard .dash-page-subtitle {
+  max-width: 42rem;
+  line-height: 1.45;
+}
+
+/* ——— KPI : cartes séparées ——— */
+.dash-v2--home .dash-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.dash-v2--home .dash-stat-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.05rem;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.dash-v2--home .dash-stat-card:hover {
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.07);
+}
+
+.dash-v2--home .dash-stat-card-icon {
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--pnigvs-muted);
+}
+
+.dash-v2--home .dash-stat-card--primary {
+  border-color: rgba(0, 135, 81, 0.18);
+  background: linear-gradient(165deg, rgba(0, 135, 81, 0.07) 0%, #fff 55%);
+}
+
+.dash-v2--home .dash-stat-card--primary .dash-stat-card-icon {
+  background: rgba(0, 135, 81, 0.12);
+  color: var(--pnigvs-primary);
+}
+
+.dash-v2--home .dash-stat-card--accent {
+  border-color: rgba(247, 127, 0, 0.22);
+  background: linear-gradient(165deg, rgba(247, 127, 0, 0.08) 0%, #fff 55%);
+}
+
+.dash-v2--home .dash-stat-card--accent .dash-stat-card-icon {
+  background: rgba(247, 127, 0, 0.14);
+  color: var(--pnigvs-accent);
+}
+
+.dash-v2--home .dash-stat-card-copy {
+  min-width: 0;
+}
+
+.dash-v2--home .dash-stat-card-label {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pnigvs-muted);
+}
+
+.dash-v2--home .dash-stat-card-value {
+  margin: 0.2rem 0 0;
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--pnigvs-ink);
+  letter-spacing: -0.03em;
+}
+
+.dash-v2--home .dash-stat-card-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--pnigvs-muted);
+}
+
+/* ——— Grille principale ——— */
+.dash-v2--home .dash-workspace--standard,
+.dash-v2--home .dash-workspace--director {
+  grid-template-columns: minmax(0, 1.45fr) minmax(14.5rem, 0.55fr);
+  grid-template-areas: 'feeds aside';
+  gap: 1rem;
+  align-items: start;
+}
+
+.dash-v2--home .dash-feed-section {
+  grid-area: feeds;
+  gap: 1rem;
+}
+
+.dash-v2--home .dash-workspace-aside {
+  grid-area: aside;
+  position: sticky;
+  top: 0.75rem;
+}
+
+/* ——— Panneaux listes ——— */
+.dash-v2--home .dash-feed-panel {
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  overflow: hidden;
+}
+
+.dash-v2--home .dash-feed-panel-head {
+  padding: 0.85rem 1rem 0.65rem;
+  border-bottom: 0;
+}
+
+.dash-v2--home .dash-feed-panel-head h2 {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--pnigvs-muted);
+}
+
+.dash-v2--home .dash-feed-panel-body {
+  padding: 0 0.5rem 0.35rem;
+}
+
+.dash-v2--home .dash-feed-panel-foot {
+  padding: 0.55rem 1rem 0.85rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(248, 250, 252, 0.7);
+}
+
+.dash-v2--home .dash-feed-panel-link {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--pnigvs-primary);
+}
+
+.dash-v2--home .dash-feed-rows {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.dash-v2--home .dash-feed-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.65rem;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.dash-v2--home .dash-feed-rows li:last-child .dash-feed-row {
+  border-bottom: 0;
+}
+
+.dash-v2--home .dash-feed-row--link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.dash-v2--home .dash-feed-row--link:hover,
+.dash-v2--home .dash-feed-row--link:focus-visible {
+  background: rgba(0, 135, 81, 0.05);
+  border-color: rgba(0, 135, 81, 0.12);
+  outline: none;
+}
+
+.dash-v2--home .dash-feed-row-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--pnigvs-ink);
+  line-height: 1.35;
+}
+
+.dash-v2--home .dash-feed-row-meta {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--pnigvs-muted);
+  line-height: 1.4;
+}
+
+.dash-v2--home .dash-feed-row-date {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--pnigvs-muted);
+  white-space: nowrap;
+}
+
+.dash-v2--home .dash-feed-empty {
+  margin: 0;
+  padding: 0.75rem 0.65rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--pnigvs-muted);
+}
+
+/* ——— Bloc statistiques DVS ——— */
+.dash-v2--home .dash-stats-compact {
+  margin-top: 0.25rem;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.dash-v2--home .dash-stats-compact .dash-section-head h2 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--pnigvs-ink);
+}
+
+.dash-v2--home .dash-stats-compact .app-pro-panel {
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+@media (max-width: 1100px) {
+  .dash-v2--home .dash-workspace--standard,
+  .dash-v2--home .dash-workspace--director {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'feeds'
+      'aside';
+  }
+
+  .dash-v2--home .dash-workspace-aside {
+    position: static;
+  }
+
+  .dash-v2--home .dash-feed-section--2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dash-v2--home .dash-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-page-title--home {
+    font-size: 1.25rem;
+  }
+}

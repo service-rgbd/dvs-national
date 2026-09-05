@@ -1,0 +1,31 @@
+# Blueprint Render — API PNIGVS (Express)
+# Secrets (DATABASE_URL) : à définir uniquement dans le dashboard Render, jamais dans git.
+#
+# Domaine custom : api-dvs.voyagesdecouvertes-menaet.ci
+#   Render → Settings → Custom Domains → ajouter le domaine
+#   DNS (Cloudflare) : CNAME api-dvs → <votre-service>.onrender.com
+
+services:
+  - type: web
+    name: pnigvs-api-dvs
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: >-
+      corepack enable &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @workspace/api-server run build
+    startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: HOST
+        value: 0.0.0.0
+      - key: CORS_ORIGIN
+        value: https://portail.voyagesdecouvertes-menaet.ci,https://pnigvs-agents.pages.dev,https://pnigvs-decouvrir.pages.dev,https://pnigvs-portail.pages.dev,http://localhost:26270
+      - key: DATABASE_URL
+        sync: false

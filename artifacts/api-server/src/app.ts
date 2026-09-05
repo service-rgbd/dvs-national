@@ -1,10 +1,16 @@
 import express, { type Express } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import router from "./routes";
+import { errorHandler } from "./middleware/error-handler";
+import { loadAuthSession } from "./middleware/auth";
+import { getCorsOrigin } from "./lib/auth-cookies";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
+
+app.set("trust proxy", 1);
 
 app.use(
   pinoHttp({
@@ -25,10 +31,18 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(
+  cors({
+    origin: getCorsOrigin(),
+    credentials: true,
+  }),
+);
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(loadAuthSession);
 
 app.use("/api", router);
+app.use(errorHandler);
 
 export default app;

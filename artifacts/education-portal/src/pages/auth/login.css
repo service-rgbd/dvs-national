@@ -1,0 +1,303 @@
+/**
+ * Connexion PNIGVS — styles isolés (.login-screen)
+ * Pas de mélange avec shadcn / Tailwind inputs (coins droits, pas de !important).
+ */
+.login-screen {
+  --login-ink: var(--pnigvs-ink);
+  --login-muted: var(--pnigvs-muted);
+  --login-line: var(--pnigvs-border);
+  --login-primary: var(--pnigvs-primary);
+  --login-accent: var(--pnigvs-accent);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  color: var(--login-ink);
+  font-family: var(--pnigvs-font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.login-screen *,
+.login-screen *::before,
+.login-screen *::after {
+  box-sizing: border-box;
+}
+
+.login-screen-top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.5rem;
+  border-bottom: 1px solid var(--login-line);
+  border-top: 4px solid var(--login-accent);
+  background: #fff;
+}
+
+.login-screen-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--login-primary);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  letter-spacing: -0.02em;
+}
+
+.login-screen-mark {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  background: linear-gradient(
+    90deg,
+    var(--login-accent) 0 33%,
+    #fff 33% 66%,
+    var(--login-primary) 66%
+  );
+  border: 1px solid var(--login-line);
+}
+
+.login-screen-back {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--login-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.login-screen-back:hover {
+  color: var(--login-accent);
+}
+
+.login-screen-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  min-height: 0;
+}
+
+.login-screen-visual {
+  position: relative;
+  min-height: 20rem;
+  overflow: hidden;
+  background: #0d3d2b;
+}
+
+.login-screen-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+.login-screen-visual-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    118deg,
+    rgba(13, 61, 43, 0.62) 0%,
+    rgba(0, 135, 81, 0.38) 42%,
+    rgba(0, 135, 81, 0.22) 68%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
+}
+
+.login-screen-visual-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 100%;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  color: #fff;
+}
+
+.login-screen-visual-copy .eyebrow {
+  font-family: var(--pnigvs-font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--login-accent);
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.login-screen-visual-copy h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  max-width: 16ch;
+}
+
+.login-screen-visual-copy p {
+  margin: 0;
+  max-width: 38ch;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.login-screen-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  background: #fff;
+}
+
+.login-screen-form-wrap {
+  width: 100%;
+  max-width: 26rem;
+}
+
+.login-screen-form-wrap header {
+  margin-bottom: 1.75rem;
+}
+
+.login-screen-form-wrap h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+  color: var(--login-primary);
+}
+
+.login-screen-form-wrap header p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--login-muted);
+  line-height: 1.5;
+}
+
+.login-screen-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.login-screen-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.login-screen-field label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--login-muted);
+  letter-spacing: 0.02em;
+}
+
+.login-screen-field input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0;
+  border: 0;
+  border-bottom: 1px solid #c5cbc2;
+  border-radius: 0;
+  background: transparent;
+  color: var(--login-ink);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.4;
+  transition: border-color 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.login-screen-field input::placeholder {
+  color: #adb5a8;
+}
+
+.login-screen-field input:hover:not(:disabled) {
+  border-bottom-color: #7a8278;
+}
+
+.login-screen-field input:focus {
+  outline: none;
+  border-bottom-color: var(--login-primary);
+  box-shadow: inset 0 -2px 0 0 var(--login-primary);
+}
+
+.login-screen-field input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.login-screen-error {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #b42318;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.login-screen-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.875rem;
+  margin-top: 0.5rem;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--login-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.login-screen-submit:hover:not(:disabled) {
+  background: var(--pnigvs-primary-dark);
+}
+
+.login-screen-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.login-screen-note {
+  margin-top: 1.75rem;
+  padding-top: 0;
+  border-top: 0;
+  font-size: 0.8125rem;
+  color: var(--login-muted);
+  line-height: 1.55;
+}
+
+.login-screen-note a {
+  color: var(--login-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.login-screen-note a:hover {
+  color: var(--login-accent);
+}
+
+@media (max-width: 900px) {
+  .login-screen-body {
+    grid-template-columns: 1fr;
+  }
+
+  .login-screen-visual {
+    min-height: 14rem;
+    max-height: 40vh;
+  }
+
+  .login-screen-visual-copy h1 {
+    font-size: 1.5rem;
+    max-width: none;
+  }
+}

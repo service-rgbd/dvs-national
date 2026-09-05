@@ -1,0 +1,142 @@
+/**
+ * PNIGVS Design System — Orange · Blanc · Vert
+ * Répartition cible : ~55 % vert · ~25 % blanc/neutre · ~20 % orange (accent)
+ * Vert = actions, navigation active, identité institutionnelle
+ * Blanc = surfaces, cartes, fonds
+ * Orange = bandeaux, focus, badges secondaires, alertes douces, 1 KPI sur 5
+ */
+:root {
+  /* ── Vert institutionnel (~55 %) ── */
+  --pnigvs-primary: #008751;
+  --pnigvs-primary-dark: #006b40;
+  --pnigvs-primary-foreground: #ffffff;
+  --pnigvs-primary-muted: rgba(0, 135, 81, 0.08);
+  --pnigvs-primary-soft: rgba(0, 135, 81, 0.12);
+  --pnigvs-primary-shadow: rgba(0, 135, 81, 0.1);
+
+  /* ── Orange accent (~20 %) ── */
+  --pnigvs-accent: #f77f00;
+  --pnigvs-accent-dark: #d96d00;
+  --pnigvs-accent-foreground: #ffffff;
+  --pnigvs-accent-light: #fff4e6;
+  --pnigvs-accent-muted: rgba(247, 127, 0, 0.12);
+  --pnigvs-accent-soft: rgba(247, 127, 0, 0.18);
+  --pnigvs-accent-border: rgba(247, 127, 0, 0.35);
+
+  /* ── Blanc & neutres (~25 %) ── */
+  --pnigvs-ink: #1a1a1f;
+  --pnigvs-muted: #5c5c66;
+  --pnigvs-paper: #fbfaf7;
+  --pnigvs-cream: #fff8ee;
+  --pnigvs-surface: #ffffff;
+  --pnigvs-border: #d9d9d4;
+  --pnigvs-line: var(--pnigvs-border);
+
+  /* Footer (vert profond) */
+  --pnigvs-footer: #0d3d2b;
+  --pnigvs-footer-muted: #c8e6d4;
+  --pnigvs-footer-text: #e8f5ec;
+
+  /* Élévations */
+  --pnigvs-elevate-1: var(--pnigvs-primary-muted);
+  --pnigvs-elevate-2: var(--pnigvs-primary-soft);
+  --pnigvs-shadow-sm: 0 5px 0 var(--pnigvs-elevate-2);
+  --pnigvs-shadow-md: 0 10px 0 rgba(0, 135, 81, 0.12);
+
+  /* Focus = orange (accessibilité + identité CI) */
+  --pnigvs-focus: var(--pnigvs-accent);
+
+  /* Alias sémantiques */
+  --primary-color: var(--pnigvs-primary);
+  --accent-color: var(--pnigvs-accent);
+  --ink: var(--pnigvs-ink);
+  --paper: var(--pnigvs-paper);
+  --cream: var(--pnigvs-cream);
+  --line: var(--pnigvs-line);
+  --portal-primary: var(--pnigvs-primary);
+  --portal-accent: var(--pnigvs-accent);
+  --portal-ink: var(--pnigvs-ink);
+  --portal-paper: var(--pnigvs-paper);
+  --pnigvs-content-max: 82rem;
+
+  /* Typographie */
+  --pnigvs-font-sans: 'DM Sans', sans-serif;
+  --pnigvs-font-mono: 'Space Mono', monospace;
+  --pnigvs-text-xs: 0.8125rem;
+  --pnigvs-text-sm: 0.875rem;
+  --pnigvs-text-base: 1rem;
+  --pnigvs-text-lg: 1.125rem;
+  --pnigvs-text-xl: 1.25rem;
+  --pnigvs-text-2xl: 1.5rem;
+  --pnigvs-text-3xl: 2rem;
+
+  /* Espacements */
+  --pnigvs-space-1: 0.25rem;
+  --pnigvs-space-2: 0.5rem;
+  --pnigvs-space-3: 0.75rem;
+  --pnigvs-space-4: 1rem;
+  --pnigvs-space-6: 1.5rem;
+  --pnigvs-space-8: 2rem;
+  --pnigvs-space-12: 3rem;
+  --pnigvs-container-max: 1240px;
+  --pnigvs-section-y: 68px;
+
+  /* Rayons */
+  --pnigvs-radius-sm: 0.25rem;
+  --pnigvs-radius-md: 0.375rem;
+  --pnigvs-radius-lg: 0.5rem;
+
+  /* États sémantiques */
+  --pnigvs-success: var(--pnigvs-primary);
+  --pnigvs-warning: var(--pnigvs-accent);
+  --pnigvs-error: #b42318;
+  --pnigvs-error-bg: #fef3f2;
+  --pnigvs-info: #175cd3;
+  --pnigvs-info-bg: #eff8ff;
+  --pnigvs-disabled: #a3a3a8;
+  --pnigvs-disabled-bg: #f0f0ed;
+  --pnigvs-loading: var(--pnigvs-muted);
+
+  /* Dashboard /app */
+  --primary: var(--pnigvs-primary);
+  --primary-hover: var(--pnigvs-primary-dark);
+  --secondary: var(--pnigvs-accent);
+  --success: var(--pnigvs-primary);
+  --warning: var(--pnigvs-accent);
+  --danger: var(--pnigvs-error);
+  --info: var(--pnigvs-info);
+  --neutral: #64748b;
+  --background: var(--pnigvs-paper);
+  --surface: var(--pnigvs-surface);
+  --surface-secondary: #f4f5f8;
+  --text-primary: var(--pnigvs-ink);
+  --text-secondary: var(--pnigvs-muted);
+  --text-muted: #94a3b8;
+  --border: var(--pnigvs-border);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 0 10px rgba(0, 0, 0, 0.05);
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --app-sidebar-bg: var(--pnigvs-footer);
+  --app-sidebar-bg-end: #0a2f22;
+  --app-sidebar-text: var(--pnigvs-footer-text);
+  --app-sidebar-muted: var(--pnigvs-footer-muted);
+  --app-sidebar-accent: var(--pnigvs-accent);
+  --app-content-bg: #f4f5f8;
+  --app-card-bg: var(--pnigvs-surface);
+  --app-card-border: #e1e5ed;
+  --app-card-radius: 4px;
+  --app-card-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  --app-kpi-green: var(--pnigvs-primary);
+  --app-kpi-orange: var(--pnigvs-accent);
+  --app-kpi-blue: var(--pnigvs-info);
+  --app-kpi-pink: #e64980;
+  --app-kpi-teal: #0d9488;
+  --app-kpi-purple: var(--pnigvs-primary);
+  --app-tab-active: var(--pnigvs-primary);
+  --app-tab-accent: var(--pnigvs-accent);
+}

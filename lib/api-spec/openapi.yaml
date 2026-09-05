@@ -2,14 +2,24 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 0.8.0
+  description: API PNIGVS — portail public, référentiel établissements, auth et application métier
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: establishments
+    description: Référentiel national des établissements scolaires
+  - name: auth
+    description: Authentification par session HttpOnly et profil utilisateur
+  - name: app
+    description: Application métier PNIGVS — tableaux de bord et modules
+  - name: workflow
+    description: Activités scolaires et workflow des demandes d'autorisation
+  - name: documents
+    description: Fichiers scolaires, circulaires et rapports documentaires
 paths:
   /healthz:
     get:
@@ -24,7 +34,1146 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /establishments:
+    get:
+      operationId: listEstablishments
+      tags: [establishments]
+      summary: Liste paginée des établissements
+      description: |
+        Retourne le référentiel des établissements avec pagination serveur obligatoire.
+        Filtres disponibles par région, DRENA, DDENA, département, localité, ordre d'enseignement et statut.
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - $ref: "#/components/parameters/SearchParam"
+        - $ref: "#/components/parameters/RegionParam"
+        - $ref: "#/components/parameters/DrenaParam"
+        - $ref: "#/components/parameters/DdenaParam"
+        - $ref: "#/components/parameters/DepartmentParam"
+        - $ref: "#/components/parameters/LocalityParam"
+        - $ref: "#/components/parameters/TypeParam"
+        - $ref: "#/components/parameters/StatusParam"
+        - $ref: "#/components/parameters/SortParam"
+        - $ref: "#/components/parameters/OrderParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstablishmentListResponse"
+        "400":
+          description: Paramètres invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /establishments/{id}:
+    get:
+      operationId: getEstablishmentById
+      tags: [establishments]
+      summary: Fiche établissement
+      description: Retourne un établissement par son identifiant UUID interne.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Établissement trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstablishmentDetail"
+        "400":
+          description: Identifiant invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Établissement introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /auth/login:
+    post:
+      operationId: authLogin
+      tags: [auth]
+      summary: Connexion par email et mot de passe
+      description: |
+        Crée une session serveur et pose un cookie HttpOnly `pnigvs_session`.
+        Les tentatives sont limitées côté serveur.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthLoginBody"
+      responses:
+        "200":
+          description: Session créée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthLoginResponse"
+        "400":
+          description: Paramètres invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          description: Trop de tentatives
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /auth/logout:
+    post:
+      operationId: authLogout
+      tags: [auth]
+      summary: Déconnexion
+      description: Révoque la session courante et efface le cookie.
+      responses:
+        "204":
+          description: Session révoquée
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /auth/me:
+    get:
+      operationId: authMe
+      tags: [auth]
+      summary: Profil de l'utilisateur connecté
+      description: Retourne l'utilisateur courant et ses rôles RBAC.
+      responses:
+        "200":
+          description: Utilisateur authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthMeResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /app/admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [app]
+      summary: Liste des comptes agents (administration DVS)
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - $ref: "#/components/parameters/SearchParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserListResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Accès réservé DVS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    post:
+      operationId: createAdminUser
+      tags: [app]
+      summary: Créer un compte directeur / fondateur d'établissement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAdminUserBody"
+      responses:
+        "201":
+          description: Compte créé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserDetail"
+        "400":
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Accès réservé DVS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /app/admin/users/{id}:
+    patch:
+      operationId: updateAdminUser
+      tags: [app]
+      summary: Activer ou désactiver un compte agent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdminUserBody"
+      responses:
+        "200":
+          description: Compte mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserDetail"
+        "404":
+          description: Compte introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Accès réservé DVS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /app/dashboard:
+    get:
+      operationId: getAppDashboard
+      tags: [app]
+      summary: Tableau de bord métier
+      description: |
+        Retourne les indicateurs clés et le périmètre de l'utilisateur connecté.
+        Les comptages sont filtrés selon le rôle et la portée géographique (DRENA, établissement).
+      responses:
+        "200":
+          description: Tableau de bord
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppDashboardResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /app/establishments:
+    get:
+      operationId: listAppEstablishments
+      tags: [app]
+      summary: Annuaire établissements (périmètre utilisateur)
+      description: |
+        Liste paginée des établissements filtrée selon le rôle et la portée géographique
+        de l'utilisateur connecté (établissement, DRENA, région ou national).
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - $ref: "#/components/parameters/SearchParam"
+        - $ref: "#/components/parameters/RegionParam"
+        - $ref: "#/components/parameters/DrenaParam"
+        - $ref: "#/components/parameters/DdenaParam"
+        - $ref: "#/components/parameters/DepartmentParam"
+        - $ref: "#/components/parameters/LocalityParam"
+        - $ref: "#/components/parameters/TypeParam"
+        - $ref: "#/components/parameters/StatusParam"
+        - $ref: "#/components/parameters/SortParam"
+        - $ref: "#/components/parameters/OrderParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstablishmentListResponse"
+        "400":
+          description: Paramètres invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /app/establishments/{id}:
+    get:
+      operationId: getAppEstablishmentById
+      tags: [app]
+      summary: Fiche établissement (périmètre utilisateur)
+      description: Retourne un établissement si l'utilisateur connecté y a accès selon son périmètre RBAC.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Établissement trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstablishmentDetail"
+        "400":
+          description: Identifiant invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Hors périmètre
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Établissement introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /activities/public:
+    get:
+      operationId: listPublicActivities
+      tags: [workflow]
+      summary: Activités scolaires autorisées — consultation publique
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - $ref: "#/components/parameters/ActivityTypeParam"
+        - $ref: "#/components/parameters/EstablishmentIdParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityListResponse"
+  /activities:
+    get:
+      operationId: listActivities
+      tags: [workflow]
+      summary: Liste des activités scolaires
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityListResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    post:
+      operationId: createActivity
+      tags: [workflow]
+      summary: Créer une activité scolaire
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateActivityBody"
+      responses:
+        "201":
+          description: Activité créée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivitySummary"
+        "400":
+          description: Paramètres invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /activities/{id}:
+    get:
+      operationId: getActivityById
+      tags: [workflow]
+      summary: Détail d'une activité
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Activité trouvée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivitySummary"
+        "404":
+          description: Activité introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /requests:
+    get:
+      operationId: listRequests
+      tags: [workflow]
+      summary: Liste des demandes d'autorisation
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - $ref: "#/components/parameters/RequestStatusParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestListResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    post:
+      operationId: createRequest
+      tags: [workflow]
+      summary: Créer une demande (brouillon)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRequestBody"
+      responses:
+        "201":
+          description: Demande créée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestDetail"
+        "400":
+          description: Paramètres invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /requests/{id}:
+    get:
+      operationId: getRequestById
+      tags: [workflow]
+      summary: Détail d'une demande avec historique
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Demande trouvée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestDetail"
+        "404":
+          description: Demande introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /requests/{id}/transitions:
+    post:
+      operationId: transitionRequest
+      tags: [workflow]
+      summary: Transition workflow d'une demande
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestTransitionBody"
+      responses:
+        "200":
+          description: Transition appliquée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestDetail"
+        "400":
+          description: Transition invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Action non autorisée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /media-publications/public:
+    get:
+      operationId: listPublicMediaPublications
+      tags: [media]
+      summary: Galerie publique des médias de sorties validés
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - $ref: "#/components/parameters/MediaTypeParam"
+        - $ref: "#/components/parameters/ActivityTypeParam"
+        - $ref: "#/components/parameters/SchoolLevelParam"
+        - $ref: "#/components/parameters/EstablishmentIdParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaPublicationListResponse"
+  /media-publications/public/{id}:
+    get:
+      operationId: getPublicMediaPublicationById
+      tags: [media]
+      summary: Détail d'une publication publique
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Publication trouvée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaPublicationDetail"
+        "404":
+          description: Publication introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /media-publications/{id}/incident:
+    post:
+      operationId: reportMediaPublicationIncident
+      tags: [media]
+      summary: Signaler un incident survenu lors d'une sortie
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportMediaPublicationIncidentBody"
+      responses:
+        "200":
+          description: Incident enregistré
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaPublicationDetail"
+        "400":
+          description: Requête invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Action non autorisée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Publication introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /media-publications:
+    get:
+      operationId: listMediaPublications
+      tags: [media]
+      summary: Liste des publications média (app)
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - $ref: "#/components/parameters/MediaPublicationStatusParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaPublicationListResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    post:
+      operationId: createMediaPublication
+      tags: [media]
+      summary: Créer un dossier média (brouillon)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMediaPublicationBody"
+      responses:
+        "201":
+          description: Publication créée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaPublicationDetail"
+        "400":
+          description: Paramètres invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Action non autorisée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /media-publications/{id}:
+    get:
+      operationId: getMediaPublicationById
+      tags: [media]
+      summary: Détail d'une publication média
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Publication trouvée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaPublicationDetail"
+        "404":
+          description: Publication introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /media-publications/{id}/transitions:
+    post:
+      operationId: transitionMediaPublication
+      tags: [media]
+      summary: Transition workflow publication média
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MediaPublicationTransitionBody"
+      responses:
+        "200":
+          description: Transition appliquée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaPublicationDetail"
+        "400":
+          description: Transition invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Action non autorisée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /media-publications/files/{id}/download:
+    get:
+      operationId: downloadMediaPublicationFile
+      tags: [media]
+      summary: Télécharger un fichier média
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Fichier binaire
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "403":
+          description: Accès refusé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Fichier introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [workflow]
+      summary: Notifications de l'utilisateur connecté
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationListResponse"
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [workflow]
+      summary: Marquer une notification comme lue
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Notification mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationItem"
+        "404":
+          description: Notification introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /statistics/public:
+    get:
+      operationId: getPublicStatistics
+      tags: [app]
+      summary: Indicateurs publics agrégés
+      description: Retourne des comptages nationaux non sensibles pour le portail public.
+      responses:
+        "200":
+          description: Statistiques publiques
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicStatisticsResponse"
+  /app/statistics:
+    get:
+      operationId: getAppStatistics
+      tags: [app]
+      summary: Statistiques détaillées du périmètre utilisateur
+      description: Répartitions par statut de demande et par type d'activité pour graphiques et rapports.
+      responses:
+        "200":
+          description: Statistiques métier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppStatisticsResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /app/reports:
+    get:
+      operationId: listReports
+      tags: [app]
+      summary: Liste des rapports générés
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportListResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /app/reports/generate:
+    post:
+      operationId: generateReport
+      tags: [app]
+      summary: Générer un rapport d'activité
+      description: |
+        Agrège les KPIs du périmètre et enregistre un document JSON téléchargeable.
+        Réservé aux profils DVS (directeur et personnel).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateReportBody"
+      responses:
+        "201":
+          description: Rapport généré
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportSummary"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Accès refusé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /documents/public:
+    get:
+      operationId: listPublicDocuments
+      tags: [documents]
+      summary: Bibliothèque documentaire publique
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - $ref: "#/components/parameters/DocumentCategoryParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentListResponse"
+  /app/documents:
+    get:
+      operationId: listAppDocuments
+      tags: [documents]
+      summary: Fichiers scolaires du périmètre utilisateur
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - $ref: "#/components/parameters/DocumentCategoryParam"
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentListResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    post:
+      operationId: createDocument
+      tags: [documents]
+      summary: Déposer un fichier scolaire
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDocumentBody"
+      responses:
+        "201":
+          description: Document enregistré
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentSummary"
+        "400":
+          description: Paramètres invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /documents/{id}/download:
+    get:
+      operationId: downloadDocument
+      tags: [documents]
+      summary: Télécharger un document
+      description: |
+        Accès public si le document est marqué public, sinon session authentifiée
+        avec périmètre compatible requise.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Fichier binaire
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Accès refusé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Document introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSizeParam:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    SearchParam:
+      name: search
+      in: query
+      schema:
+        type: string
+        maxLength: 200
+    RegionParam:
+      name: region
+      in: query
+      description: Code ou UUID de la région
+      schema:
+        type: string
+        maxLength: 64
+    DrenaParam:
+      name: drena
+      in: query
+      description: Code ou UUID de la DRENA
+      schema:
+        type: string
+        maxLength: 64
+    DdenaParam:
+      name: ddena
+      in: query
+      description: Code ou UUID de la DDENA
+      schema:
+        type: string
+        maxLength: 64
+    DepartmentParam:
+      name: department
+      in: query
+      description: Code ou UUID du département
+      schema:
+        type: string
+        maxLength: 64
+    LocalityParam:
+      name: locality
+      in: query
+      description: Nom ou UUID de la localité
+      schema:
+        type: string
+        maxLength: 255
+    TypeParam:
+      name: type
+      in: query
+      description: Ordre d'enseignement (LAIC, CATHOLIQUE, …)
+      schema:
+        type: string
+        maxLength: 50
+    StatusParam:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [active, inactive, pending, archived]
+    SortParam:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [name, establishmentCode, listNumber, createdAt, updatedAt]
+        default: name
+    OrderParam:
+      name: order
+      in: query
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+    RequestStatusParam:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [draft, submitted, under_review, forwarded, approved, rejected, cancelled, archived, returned_for_correction]
+    DocumentCategoryParam:
+      name: category
+      in: query
+      schema:
+        $ref: "#/components/schemas/DocumentCategory"
+    MediaPublicationStatusParam:
+      name: status
+      in: query
+      schema:
+        $ref: "#/components/schemas/MediaPublicationStatus"
+    MediaTypeParam:
+      name: mediaType
+      in: query
+      schema:
+        $ref: "#/components/schemas/MediaType"
+    ActivityTypeParam:
+      name: activityType
+      in: query
+      description: Type d'activité scolaire (sortie, compétition, etc.)
+      schema:
+        type: string
+        maxLength: 64
+    SchoolLevelParam:
+      name: schoolLevel
+      in: query
+      description: Niveau scolaire de l'établissement (primaire ou secondaire)
+      schema:
+        $ref: "#/components/schemas/SchoolLevel"
+    EstablishmentIdParam:
+      name: establishmentId
+      in: query
+      description: Filtrer les publications d'un établissement (UUID)
+      schema:
+        type: string
+        format: uuid
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +1182,1029 @@ components:
           type: string
       required:
         - status
-
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+          required:
+            - code
+            - message
+      required:
+        - error
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+      required:
+        - page
+        - pageSize
+        - total
+        - totalPages
+    GeoRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - name
+    LocalityRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+        - id
+        - name
+    EstablishmentSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        establishmentCode:
+          type: string
+        name:
+          type: string
+        teachingOrder:
+          type: string
+          nullable: true
+        authorizedCycle:
+          type: string
+          nullable: true
+        recognizedCycle:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        contacts:
+          type: string
+          nullable: true
+        status:
+          type: string
+        listNumber:
+          type: integer
+          nullable: true
+        region:
+          $ref: "#/components/schemas/GeoRef"
+        drena:
+          $ref: "#/components/schemas/GeoRef"
+        ddena:
+          allOf:
+            - $ref: "#/components/schemas/GeoRef"
+          nullable: true
+        department:
+          allOf:
+            - $ref: "#/components/schemas/GeoRef"
+          nullable: true
+        locality:
+          $ref: "#/components/schemas/LocalityRef"
+      required:
+        - id
+        - establishmentCode
+        - name
+        - status
+        - region
+        - drena
+        - locality
+    EstablishmentDetail:
+      allOf:
+        - $ref: "#/components/schemas/EstablishmentSummary"
+        - type: object
+          properties:
+            sourceFile:
+              type: string
+              nullable: true
+            sourceSheet:
+              type: string
+              nullable: true
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+          required:
+            - createdAt
+            - updatedAt
+    EstablishmentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EstablishmentSummary"
+        pagination:
+          $ref: "#/components/schemas/PaginationMeta"
+      required:
+        - data
+        - pagination
+    AuthRole:
+      type: object
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+      required:
+        - code
+        - label
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, locked, pending_verification]
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuthRole"
+      required:
+        - id
+        - email
+        - fullName
+        - status
+        - roles
+    AuthLoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+      required:
+        - email
+        - password
+    AuthLoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/AuthUser"
+      required:
+        - user
+    AuthMeResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/AuthUser"
+      required:
+        - user
+    SchoolHeadRoleCode:
+      type: string
+      enum: [school_head_primary, school_head_secondary]
+    AdminUserSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        fullName:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, locked, pending_verification]
+        roleCode:
+          type: string
+        roleLabel:
+          type: string
+        establishmentId:
+          type: string
+          format: uuid
+          nullable: true
+        establishmentName:
+          type: string
+          nullable: true
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - fullName
+        - status
+        - roleCode
+        - roleLabel
+        - createdAt
+    AdminUserDetail:
+      allOf:
+        - $ref: "#/components/schemas/AdminUserSummary"
+    AdminUserListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUserSummary"
+        pagination:
+          $ref: "#/components/schemas/PaginationMeta"
+      required:
+        - data
+        - pagination
+    CreateAdminUserBody:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+          minLength: 2
+          maxLength: 255
+        password:
+          type: string
+          minLength: 12
+          maxLength: 128
+        roleCode:
+          $ref: "#/components/schemas/SchoolHeadRoleCode"
+        establishmentId:
+          type: string
+          format: uuid
+      required:
+        - email
+        - fullName
+        - password
+        - roleCode
+        - establishmentId
+    UpdateAdminUserBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, inactive]
+      required:
+        - status
+    AppDashboardProfile:
+      type: object
+      properties:
+        primaryRoleCode:
+          type: string
+        primaryRoleLabel:
+          type: string
+        scopeLabel:
+          type: string
+        regionId:
+          type: string
+          format: uuid
+          nullable: true
+        drenaId:
+          type: string
+          format: uuid
+          nullable: true
+        establishmentId:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+        - primaryRoleCode
+        - primaryRoleLabel
+        - scopeLabel
+    AppDashboardKpis:
+      type: object
+      properties:
+        establishments:
+          type: integer
+          minimum: 0
+        activities:
+          type: integer
+          minimum: 0
+        requestsPending:
+          type: integer
+          minimum: 0
+        requestsUnderReview:
+          type: integer
+          minimum: 0
+      required:
+        - establishments
+        - activities
+        - requestsPending
+        - requestsUnderReview
+    AppDashboardResponse:
+      type: object
+      properties:
+        profile:
+          $ref: "#/components/schemas/AppDashboardProfile"
+        kpis:
+          $ref: "#/components/schemas/AppDashboardKpis"
+      required:
+        - profile
+        - kpis
+    ActivitySummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        establishmentId:
+          type: string
+          format: uuid
+        establishmentName:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        scheduledAt:
+          type: string
+          format: date-time
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - establishmentId
+        - establishmentName
+        - type
+        - title
+        - createdAt
+    ActivityListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivitySummary"
+        pagination:
+          $ref: "#/components/schemas/PaginationMeta"
+      required:
+        - data
+        - pagination
+    CreateActivityBody:
+      type: object
+      properties:
+        establishmentId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          maxLength: 64
+        title:
+          type: string
+          maxLength: 500
+        description:
+          type: string
+          maxLength: 5000
+        scheduledAt:
+          type: string
+          format: date-time
+        location:
+          type: string
+          maxLength: 500
+      required:
+        - type
+        - title
+    RequestStatus:
+      type: string
+      enum: [draft, submitted, under_review, forwarded, approved, rejected, cancelled, archived, returned_for_correction]
+    WorkflowAction:
+      type: string
+      enum: [submit, review, forward, approve, publish, reject, cancel, return_for_correction, resubmit, revoke]
+    RequestSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/RequestStatus"
+        description:
+          type: string
+          nullable: true
+        decisionReason:
+          type: string
+          nullable: true
+        establishmentId:
+          type: string
+          format: uuid
+        establishmentName:
+          type: string
+        activityId:
+          type: string
+          format: uuid
+          nullable: true
+        activityTitle:
+          type: string
+          nullable: true
+        checklist:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: Checklist établissement (Voyage Découverte, formulaire DVS)
+        dvsValidation:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: Contrôles internes DVS (prospection, TDR, certificat)
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        decidedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - status
+        - establishmentId
+        - establishmentName
+        - createdAt
+        - updatedAt
+    RequestHistoryEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        previousStatus:
+          allOf:
+            - $ref: "#/components/schemas/RequestStatus"
+          nullable: true
+        newStatus:
+          $ref: "#/components/schemas/RequestStatus"
+        reason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - newStatus
+        - createdAt
+    RequestDetail:
+      allOf:
+        - $ref: "#/components/schemas/RequestSummary"
+        - type: object
+          properties:
+            history:
+              type: array
+              items:
+                $ref: "#/components/schemas/RequestHistoryEntry"
+            allowedActions:
+              type: array
+              items:
+                $ref: "#/components/schemas/WorkflowAction"
+          required:
+            - history
+            - allowedActions
+    RequestListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestSummary"
+        pagination:
+          $ref: "#/components/schemas/PaginationMeta"
+      required:
+        - data
+        - pagination
+    CreateRequestBody:
+      type: object
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        description:
+          type: string
+          maxLength: 5000
+      required:
+        - activityId
+    RequestTransitionBody:
+      type: object
+      properties:
+        action:
+          $ref: "#/components/schemas/WorkflowAction"
+        reason:
+          type: string
+          maxLength: 2000
+        checklist:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: Mise à jour checklist établissement (soumission / resoumission)
+        dvsValidation:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: Mise à jour contrôles DVS (validation)
+      required:
+        - action
+    MediaPublicationStatus:
+      type: string
+      enum: [draft, submitted, under_review, approved, published, rejected, cancelled]
+    MediaType:
+      type: string
+      enum: [photo, video]
+    SchoolLevel:
+      type: string
+      enum: [primaire, secondaire, mixte]
+    MediaPublicationFile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mediaType:
+          $ref: "#/components/schemas/MediaType"
+        fileName:
+          type: string
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+          minimum: 0
+          nullable: true
+        caption:
+          type: string
+          nullable: true
+        downloadUrl:
+          type: string
+      required:
+        - id
+        - mediaType
+        - fileName
+        - mimeType
+        - downloadUrl
+    MediaPublicationHistoryEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        previousStatus:
+          $ref: "#/components/schemas/MediaPublicationStatus"
+          nullable: true
+        newStatus:
+          $ref: "#/components/schemas/MediaPublicationStatus"
+        reason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - newStatus
+        - createdAt
+    MediaPublicationSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        establishmentId:
+          type: string
+          format: uuid
+        establishmentName:
+          type: string
+        activityId:
+          type: string
+          format: uuid
+        activityTitle:
+          type: string
+        activityType:
+          type: string
+        schoolLevel:
+          $ref: "#/components/schemas/SchoolLevel"
+          nullable: true
+        requestId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: "#/components/schemas/MediaPublicationStatus"
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        decisionReason:
+          type: string
+          nullable: true
+        fileCount:
+          type: integer
+          minimum: 0
+        coverMediaType:
+          $ref: "#/components/schemas/MediaType"
+          nullable: true
+        coverDownloadUrl:
+          type: string
+          nullable: true
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        approvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        incidentReported:
+          type: boolean
+        incidentDescription:
+          type: string
+          nullable: true
+        incidentReportedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - establishmentId
+        - establishmentName
+        - activityId
+        - activityTitle
+        - activityType
+        - status
+        - title
+        - fileCount
+        - incidentReported
+        - createdAt
+        - updatedAt
+    MediaPublicationDetail:
+      allOf:
+        - $ref: "#/components/schemas/MediaPublicationSummary"
+        - type: object
+          properties:
+            files:
+              type: array
+              items:
+                $ref: "#/components/schemas/MediaPublicationFile"
+            history:
+              type: array
+              items:
+                $ref: "#/components/schemas/MediaPublicationHistoryEntry"
+            allowedActions:
+              type: array
+              items:
+                $ref: "#/components/schemas/WorkflowAction"
+          required:
+            - files
+            - history
+            - allowedActions
+    MediaPublicationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaPublicationSummary"
+        pagination:
+          $ref: "#/components/schemas/PaginationMeta"
+      required:
+        - data
+        - pagination
+    CreateMediaPublicationFileInput:
+      type: object
+      properties:
+        fileName:
+          type: string
+          maxLength: 255
+        mimeType:
+          type: string
+          maxLength: 120
+        mediaType:
+          $ref: "#/components/schemas/MediaType"
+        fileContentBase64:
+          type: string
+          maxLength: 70000000
+        caption:
+          type: string
+          maxLength: 500
+        durationSeconds:
+          type: number
+          minimum: 0
+          maximum: 180
+          description: Durée vidéo en secondes — obligatoire si mediaType=video, max 3 min
+      required:
+        - fileName
+        - mimeType
+        - mediaType
+        - fileContentBase64
+    CreateMediaPublicationBody:
+      type: object
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 3
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 5000
+        files:
+          type: array
+          minItems: 1
+          maxItems: 12
+          items:
+            $ref: "#/components/schemas/CreateMediaPublicationFileInput"
+      required:
+        - activityId
+        - title
+        - files
+    MediaPublicationTransitionBody:
+      type: object
+      properties:
+        action:
+          $ref: "#/components/schemas/WorkflowAction"
+        reason:
+          type: string
+          maxLength: 2000
+      required:
+        - action
+    ReportMediaPublicationIncidentBody:
+      type: object
+      properties:
+        description:
+          type: string
+          minLength: 10
+          maxLength: 2000
+      required:
+        - description
+    NotificationItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+          nullable: true
+        resourceType:
+          type: string
+          nullable: true
+        resourceId:
+          type: string
+          format: uuid
+          nullable: true
+        isRead:
+          type: boolean
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - title
+        - isRead
+        - createdAt
+    NotificationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/NotificationItem"
+      required:
+        - data
+    PublicStatisticsResponse:
+      type: object
+      properties:
+        establishments:
+          type: integer
+          minimum: 0
+        establishmentsActive:
+          type: integer
+          minimum: 0
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - establishments
+        - establishmentsActive
+        - updatedAt
+    StatisticsBreakdownItem:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+      required:
+        - key
+        - label
+        - count
+    AppStatisticsResponse:
+      type: object
+      properties:
+        kpis:
+          $ref: "#/components/schemas/AppDashboardKpis"
+        requestsByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/StatisticsBreakdownItem"
+        activitiesByType:
+          type: array
+          items:
+            $ref: "#/components/schemas/StatisticsBreakdownItem"
+      required:
+        - kpis
+        - requestsByStatus
+        - activitiesByType
+    ReportType:
+      type: string
+      enum: [monthly, annual, regional]
+    ReportSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/ReportType"
+        periodStart:
+          type: string
+          format: date-time
+          nullable: true
+        periodEnd:
+          type: string
+          format: date-time
+          nullable: true
+        documentId:
+          type: string
+          format: uuid
+          nullable: true
+        documentTitle:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - createdAt
+    ReportListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportSummary"
+        pagination:
+          $ref: "#/components/schemas/PaginationMeta"
+      required:
+        - data
+        - pagination
+    GenerateReportBody:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/ReportType"
+      required:
+        - type
+    DocumentCategory:
+      type: string
+      enum: [circulaire, rapport, fichier_scolaire, autre]
+    DocumentSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          $ref: "#/components/schemas/DocumentCategory"
+        fileName:
+          type: string
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+          nullable: true
+        isPublic:
+          type: boolean
+        downloadUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - category
+        - fileName
+        - mimeType
+        - isPublic
+        - downloadUrl
+        - createdAt
+    DocumentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentSummary"
+        pagination:
+          $ref: "#/components/schemas/PaginationMeta"
+      required:
+        - data
+        - pagination
+    CreateDocumentBody:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 500
+        description:
+          type: string
+          maxLength: 5000
+        category:
+          $ref: "#/components/schemas/DocumentCategory"
+        isPublic:
+          type: boolean
+          default: false
+        fileName:
+          type: string
+          maxLength: 255
+        mimeType:
+          type: string
+          maxLength: 128
+        fileContentBase64:
+          type: string
+          maxLength: 7000000
+      required:
+        - title
+        - category
+        - fileName
+        - mimeType
+        - fileContentBase64

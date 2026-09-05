@@ -1,0 +1,71 @@
+{
+  "startedAt": "2026-08-19T00:43:16.696Z",
+  "finishedAt": "2026-08-19T00:43:51.467Z",
+  "sourceFiles": [
+    "DREN_ABIDJAN_1_Page_98.xlsx",
+    "DREN_ABIDJAN_1_Page_99.xlsx",
+    "DREN_ABIDJAN_1_Page_100.xlsx",
+    "DREN_ABIDJAN_1_Page_101.xlsx",
+    "DREN_ABIDJAN_1_Page_102.xlsx"
+  ],
+  "drenaName": "DREN Abidjan 1",
+  "totals": {
+    "read": 140,
+    "valid": 140,
+    "invalid": 0,
+    "warnings": 3,
+    "duplicateCodes": 1,
+    "inserted": 140,
+    "updated": 0,
+    "skipped": 0
+  },
+  "issues": [
+    {
+      "level": "warning",
+      "code": "INVALID_EMAIL",
+      "message": "E-mail potentiellement invalide: « petitseminairedebinger ville@gmail.com ».",
+      "sourceFile": "DREN_ABIDJAN_1_Page_98.xlsx",
+      "sourceSheet": "Page 98 - DREN Abidjan 1",
+      "sourceRow": 5,
+      "establishmentCode": "000323",
+      "name": "COURS SECONDAIRE CATHOLIQUE BINGERVILLE"
+    },
+    {
+      "level": "warning",
+      "code": "DUPLICATE_ESTABLISHMENT_CODE",
+      "message": "Code établissement partagé (000218) — 2 lignes. Conservation de chaque ligne avec clé (drena, code, nom).",
+      "sourceFile": "DREN_ABIDJAN_1_Page_99.xlsx",
+      "sourceSheet": "Page 99 - DREN Abidjan 1",
+      "sourceRow": 31,
+      "establishmentCode": "000218",
+      "name": "COLLEGE ANDRE MALRAUX COCODY RIVIERA"
+    },
+    {
+      "level": "warning",
+      "code": "DUPLICATE_ESTABLISHMENT_CODE",
+      "message": "Code établissement partagé (000218) — 2 lignes. Conservation de chaque ligne avec clé (drena, code, nom).",
+      "sourceFile": "DREN_ABIDJAN_1_Page_101.xlsx",
+      "sourceSheet": "Page 101 - DREN Abidjan 1",
+      "sourceRow": 33,
+      "establishmentCode": "000218",
+      "name": "COLLEGE LE PANTHEON WILLIAMSVILLE"
+    }
+  ],
+  "duplicateCodeGroups": [
+    {
+      "establishmentCode": "000218",
+      "rows": [
+        {
+          "sourceFile": "DREN_ABIDJAN_1_Page_99.xlsx",
+          "sourceRow": 31,
+          "name": "COLLEGE ANDRE MALRAUX COCODY RIVIERA"
+        },
+        {
+          "sourceFile": "DREN_ABIDJAN_1_Page_101.xlsx",
+          "sourceRow": 33,
+          "name": "COLLEGE LE PANTHEON WILLIAMSVILLE"
+        }
+      ]
+    }
+  ]
+}

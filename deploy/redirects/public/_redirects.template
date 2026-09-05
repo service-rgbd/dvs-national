@@ -1,0 +1,8 @@
+# Redirections Cloudflare Pages — portail public (sans login ni /app).
+# {{AGENTS_ORIGIN}} est remplacé au build par VITE_AGENTS_PORTAL_URL.
+
+/login      {{AGENTS_ORIGIN}}/login  302
+/login/*    {{AGENTS_ORIGIN}}/login/:splat  302
+/app        {{AGENTS_ORIGIN}}/app  302
+/app/*      {{AGENTS_ORIGIN}}/app/:splat  302
+/*          /index.html  200

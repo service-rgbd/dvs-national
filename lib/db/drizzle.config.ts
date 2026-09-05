@@ -1,14 +1,15 @@
 import { defineConfig } from "drizzle-kit";
 import path from "path";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL, ensure the database is provisioned");
-}
+/** Placeholder local — generate ne nécessite pas de connexion réelle. */
+const databaseUrl =
+  process.env.DATABASE_URL ?? "postgresql://localhost:5432/pnigvs_dev";
 
 export default defineConfig({
   schema: path.join(__dirname, "./src/schema/index.ts"),
+  out: path.join(__dirname, "./drizzle"),
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    url: databaseUrl,
   },
 });

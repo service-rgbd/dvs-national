@@ -1,0 +1,7 @@
+# Portail public PNIGVS (pages institutionnelles uniquement)
+name = "pnigvs-portail"
+compatibility_date = "2025-09-01"
+pages_build_output_dir = "../artifacts/education-portal/dist/public"
+
+[vars]
+VITE_PORTAL_SURFACE = "public"

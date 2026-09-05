@@ -1,0 +1,32 @@
+{
+  "startedAt": "2026-08-19T00:45:17.717Z",
+  "finishedAt": "2026-08-19T00:45:47.999Z",
+  "sourceFiles": [
+    "DREN_ABIDJAN_1_Page_98.xlsx",
+    "DREN_ABIDJAN_1_Page_99.xlsx"
+  ],
+  "drenaName": "DREN Abidjan 1",
+  "totals": {
+    "read": 65,
+    "valid": 65,
+    "invalid": 0,
+    "warnings": 1,
+    "duplicateCodes": 0,
+    "inserted": 0,
+    "updated": 65,
+    "skipped": 0
+  },
+  "issues": [
+    {
+      "level": "warning",
+      "code": "INVALID_EMAIL",
+      "message": "E-mail potentiellement invalide: « petitseminairedebinger ville@gmail.com ».",
+      "sourceFile": "DREN_ABIDJAN_1_Page_98.xlsx",
+      "sourceSheet": "Page 98 - DREN Abidjan 1",
+      "sourceRow": 5,
+      "establishmentCode": "000323",
+      "name": "COURS SECONDAIRE CATHOLIQUE BINGERVILLE"
+    }
+  ],
+  "duplicateCodeGroups": []
+}
