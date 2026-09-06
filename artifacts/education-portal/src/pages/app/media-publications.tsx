@@ -1,37 +1,24 @@
-import { FormEvent, useMemo, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { useQueryClient } from '@tanstack/react-query';
-import type { MediaPublicationStatusParamParameter } from '@workspace/api-client-react';
 
+import { MediaPublicationComposeDialog } from '@/components/app/media-publications/MediaPublicationComposeDialog';
+import { MediaPublicationsList } from '@/components/app/media-publications/MediaPublicationWorkspace';
 import { AppPage } from '@/components/app/AppPage';
-import {
-  MediaPublicationCreateForm,
-  type MediaFileDraft,
-} from '@/components/app/media-publications/MediaPublicationCreateForm';
-import {
-  MediaPublicationsList,
-  MediaScopeBanner,
-} from '@/components/app/media-publications/MediaPublicationWorkspace';
 import { AppProPageShell } from '@/components/app/pro/AppProPageShell';
-import { AppProPanel } from '@/components/app/pro/AppProPanel';
-import {
-  canCreateMediaPublication,
-  getMediaActorConfig,
-} from '@/config/media-publication-permissions';
-import {
-  MEDIA_STATUS_FILTERS,
-  mediaFilterHref,
-  mediaFilterLabel,
-} from '@/config/media-publication-status-filters';
+import { DashFilterBar } from '@/components/dash/DashFilterBar';
+import { DashSurface } from '@/components/dash/DashSurface';
+import { canCreateMediaPublication } from '@/config/media-publication-permissions';
+import { MEDIA_STATUS_FILTERS, MEDIA_STATUS_LABELS } from '@/config/media-publication-status-filters';
 import { appRoutes } from '@/content/routes';
-import { invalidateMediaPublications } from '@/lib/query-sync';
 import {
-  getVideoDurationSeconds,
-  MAX_VIDEO_DURATION_SECONDS,
-} from '@/lib/media-utils';
+  filterAndSortMediaPublications,
+  type MediaKindFilter,
+  type MediaPeriodFilter,
+  type MediaSortKey,
+} from '@/lib/media-filters';
+import { liveQueryHookOptions } from '@/lib/query-sync';
 import {
-  useCreateMediaPublication,
   useGetAppDashboard,
   useListActivities,
   useListMediaPublications,
@@ -39,65 +26,29 @@ import {
 } from '@workspace/api-client-react';
 import '@/styles/media-publications.css';
 
-function readFileAsBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result !== 'string') {
-        reject(new Error('Lecture du fichier impossible.'));
-        return;
-      }
-      const base64 = result.split(',')[1];
-      if (!base64) {
-        reject(new Error('Contenu du fichier invalide.'));
-        return;
-      }
-      resolve(base64);
-    };
-    reader.onerror = () => reject(reader.error ?? new Error('Lecture du fichier impossible.'));
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function AppMediaPublicationsPage() {
-  const queryClient = useQueryClient();
-  const [location] = useLocation();
-  const [activityId, setActivityId] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [files, setFiles] = useState<MediaFileDraft[]>([]);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [location, setLocation] = useLocation();
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [kind, setKind] = useState<MediaKindFilter>('all');
+  const [period, setPeriod] = useState<MediaPeriodFilter>('all');
+  const [sort, setSort] = useState<MediaSortKey>('date-desc');
 
   const statusFilter = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get('status') ?? undefined;
+    return params.get('status') ?? '';
   }, [location]);
 
-  const { data: dashboardData } = useGetAppDashboard();
-  const { data: activitiesData } = useListActivities({ page: 1, pageSize: 100 });
-  const { data: approvedRequestsData } = useListRequests({
-    page: 1,
-    pageSize: 100,
-    status: 'approved',
-  });
-  const { data, isLoading, isError, refetch } = useListMediaPublications({
-    page: 1,
-    pageSize: 30,
-    status: statusFilter as MediaPublicationStatusParamParameter | undefined,
-  });
-
-  const createPublication = useCreateMediaPublication({
-    mutation: {
-      onSuccess: async (result) => {
-        await invalidateMediaPublications(queryClient);
-        window.location.href = appRoutes.mediaPublicationDetail(result.id);
-      },
-      onError: () => {
-        setSubmitError('Impossible de créer le dossier. Vérifiez l\'activité et les fichiers.');
-      },
-    },
-  });
+  const { data: dashboardData } = useGetAppDashboard(liveQueryHookOptions());
+  const { data: activitiesData } = useListActivities({ page: 1, pageSize: 100 }, liveQueryHookOptions());
+  const { data: approvedRequestsData } = useListRequests(
+    { page: 1, pageSize: 100, status: 'approved' },
+    liveQueryHookOptions(),
+  );
+  const { data, isLoading, isError, refetch } = useListMediaPublications(
+    { page: 1, pageSize: 100 },
+    liveQueryHookOptions(),
+  );
 
   const approvedActivityIds = new Set(
     (approvedRequestsData?.data ?? []).map((request) => request.activityId),
@@ -108,147 +59,150 @@ export default function AppMediaPublicationsPage() {
 
   const profile = dashboardData?.profile;
   const canCreate = profile ? canCreateMediaPublication(profile.primaryRoleCode) : false;
-  const actorConfig = profile ? getMediaActorConfig(profile) : null;
   const publications = data?.data ?? [];
-  const filterLabel = statusFilter ? mediaFilterLabel(statusFilter) : undefined;
+  const visible = useMemo(
+    () =>
+      filterAndSortMediaPublications(publications, {
+        query,
+        status: statusFilter,
+        kind,
+        period,
+        sort,
+      }),
+    [kind, period, publications, query, sort, statusFilter],
+  );
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitError(null);
-    if (!activityId || !title.trim() || files.length === 0) return;
+  const hasActiveFilters = Boolean(query.trim() || statusFilter || kind !== 'all' || period !== 'all' || sort !== 'date-desc');
 
-    try {
-      const payloadFiles = await Promise.all(
-        files.map(async (item) => {
-          const base = {
-            fileName: item.file.name,
-            mimeType: item.file.type,
-            mediaType: item.mediaType,
-            fileContentBase64: await readFileAsBase64(item.file),
-            caption: item.caption.trim() || undefined,
-          };
-
-          if (item.mediaType === 'video') {
-            const durationSeconds = await getVideoDurationSeconds(item.file);
-            if (durationSeconds > MAX_VIDEO_DURATION_SECONDS) {
-              throw new Error('VIDEO_TOO_LONG');
-            }
-            return { ...base, durationSeconds: Math.ceil(durationSeconds) };
-          }
-
-          return base;
-        }),
-      );
-
-      createPublication.mutate({
-        data: {
-          activityId,
-          title: title.trim(),
-          description: description.trim() || undefined,
-          files: payloadFiles,
-        },
-      });
-    } catch (error) {
-      if (error instanceof Error && error.message === 'VIDEO_TOO_LONG') {
-        setSubmitError('Chaque vidéo ne doit pas dépasser 3 minutes.');
-        return;
-      }
-      setSubmitError('Erreur lors de la lecture des fichiers.');
-    }
+  function setStatus(value: string) {
+    setLocation(value ? `${appRoutes.mediaPublications}?status=${value}` : appRoutes.mediaPublications);
   }
 
   return (
     <AppPage
       title="Publications média"
-      description="Photos et vidéos de sorties scolaires — validation DREN/DVS avant publication publique."
+      description="Photos et vidéos de sorties — dépôt, instruction, puis publication publique."
+      action={
+        canCreate ? (
+          <button type="button" className="dash-chip-btn" onClick={() => setComposeOpen(true)}>
+            <Plus size={14} aria-hidden="true" />
+            Nouveau dossier
+          </button>
+        ) : undefined
+      }
     >
       <AppProPageShell>
-        {dashboardData ? (
-          <MediaScopeBanner
-            profile={dashboardData.profile}
-            listedCount={publications.length}
-            statusFilterLabel={filterLabel}
+        {canCreate ? (
+          <MediaPublicationComposeDialog
+            open={composeOpen}
+            onOpenChange={setComposeOpen}
+            activities={eligibleActivities}
           />
         ) : null}
 
-        <nav className="media-status-nav" aria-label="Filtres par statut">
-          <a
-            href={appRoutes.mediaPublications}
-            className={!statusFilter ? 'is-active' : undefined}
-          >
-            Tous
-          </a>
-          {MEDIA_STATUS_FILTERS.map((filter) => (
-            <a
-              key={filter.status}
-              href={mediaFilterHref(filter.status)}
-              className={statusFilter === filter.status ? 'is-active' : undefined}
-            >
-              {filter.label}
-            </a>
-          ))}
-        </nav>
+        <DashSurface>
+          <DashFilterBar
+            search={query}
+            searchPlaceholder="Titre, sortie, établissement…"
+            onSearchChange={setQuery}
+            filters={[
+              {
+                id: 'status',
+                label: 'Statut',
+                value: statusFilter,
+                onChange: setStatus,
+                options: [
+                  { value: '', label: 'Tous les statuts' },
+                  ...MEDIA_STATUS_FILTERS.map((item) => ({
+                    value: item.status,
+                    label: item.label,
+                  })),
+                ],
+              },
+              {
+                id: 'kind',
+                label: 'Type',
+                value: kind,
+                onChange: (value) => setKind(value as MediaKindFilter),
+                options: [
+                  { value: 'all', label: 'Photos et vidéos' },
+                  { value: 'photo', label: 'Photos' },
+                  { value: 'video', label: 'Vidéos' },
+                ],
+              },
+              {
+                id: 'period',
+                label: 'Période',
+                value: period,
+                onChange: (value) => setPeriod(value as MediaPeriodFilter),
+                options: [
+                  { value: 'all', label: 'Toutes les dates' },
+                  { value: 'today', label: "Aujourd'hui" },
+                  { value: 'week', label: '7 derniers jours' },
+                  { value: 'month', label: 'Ce mois' },
+                  { value: 'year', label: 'Cette année' },
+                ],
+              },
+              {
+                id: 'sort',
+                label: 'Tri',
+                value: sort,
+                onChange: (value) => setSort(value as MediaSortKey),
+                options: [
+                  { value: 'date-desc', label: 'Plus récentes' },
+                  { value: 'date-asc', label: 'Plus anciennes' },
+                  { value: 'name-asc', label: 'Nom A → Z' },
+                  { value: 'name-desc', label: 'Nom Z → A' },
+                ],
+              },
+            ]}
+          />
 
-        <div
-          className={`dash-workspace dash-workspace--media${
-            canCreate ? '' : ' dash-workspace--media-review'
-          }`}
-        >
-          <section className="media-list-section" aria-labelledby="media-list-heading">
-            <AppProPanel
-              title={
-                filterLabel ??
-                (actorConfig?.kind === 'establishment'
-                  ? 'Mes dossiers média'
-                  : 'Dossiers du périmètre')
-              }
-              headingId="media-list-heading"
-              className="media-list-panel"
-              action={
-                <span className="app-pro-count">
-                  {publications.length} dossier(s){statusFilter ? ' · filtre actif' : ''}
-                </span>
-              }
-            >
-              <MediaPublicationsList
-                publications={publications}
-                isLoading={isLoading}
-                isError={isError}
-                statusFilterLabel={filterLabel}
-                canCreate={canCreate}
-                onRetry={() => refetch()}
-              />
-            </AppProPanel>
-          </section>
+          <p className="dash-filter-hint">
+            {isLoading
+              ? 'Chargement…'
+              : `${visible.length.toLocaleString('fr-FR')} dossier${visible.length > 1 ? 's' : ''}${
+                  visible.length !== publications.length
+                    ? ` sur ${publications.length.toLocaleString('fr-FR')}`
+                    : ''
+                }`}
+            {statusFilter ? ` · ${MEDIA_STATUS_LABELS[statusFilter as keyof typeof MEDIA_STATUS_LABELS] ?? statusFilter}` : ''}
+            {hasActiveFilters ? (
+              <>
+                {' · '}
+                <button
+                  type="button"
+                  className="activities-filter-reset"
+                  onClick={() => {
+                    setQuery('');
+                    setKind('all');
+                    setPeriod('all');
+                    setSort('date-desc');
+                    setStatus('');
+                  }}
+                >
+                  Réinitialiser
+                </button>
+              </>
+            ) : null}
+          </p>
 
-          {canCreate ? (
-            <aside className="media-aside" aria-label="Dépôt média">
-              <MediaPublicationCreateForm
-                activities={eligibleActivities}
-                activityId={activityId}
-                title={title}
-                description={description}
-                files={files}
-                isPending={createPublication.isPending}
-                onActivityChange={setActivityId}
-                onTitleChange={setTitle}
-                onDescriptionChange={setDescription}
-                onFilesChange={setFiles}
-                onSubmit={handleSubmit}
-              />
-              {eligibleActivities.length === 0 ? (
-                <p className="media-create-warning">
-                  Aucune activité avec demande validée n&apos;est disponible dans votre périmètre.
-                </p>
-              ) : null}
-              {submitError ? (
-                <p className="media-create-error" role="alert">
-                  {submitError}
-                </p>
-              ) : null}
-            </aside>
-          ) : null}
-        </div>
+          <MediaPublicationsList
+            publications={visible}
+            isLoading={isLoading}
+            isError={isError}
+            canCreate={canCreate}
+            onRetry={() => refetch()}
+            onCreate={canCreate ? () => setComposeOpen(true) : undefined}
+            emptyMessage={
+              publications.length === 0
+                ? canCreate
+                  ? 'Aucun dossier média. Déposez les photos d’une sortie déjà autorisée.'
+                  : 'Aucun dossier média dans ce périmètre.'
+                : 'Aucun dossier ne correspond à ces filtres.'
+            }
+          />
+        </DashSurface>
       </AppProPageShell>
     </AppPage>
   );

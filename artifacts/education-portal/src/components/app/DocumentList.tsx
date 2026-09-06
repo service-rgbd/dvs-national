@@ -1,4 +1,4 @@
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, Plus } from 'lucide-react';
 
 import {
   DOCUMENT_CATEGORY_LABELS,
@@ -13,20 +13,22 @@ type DocumentItem = {
   category: DocumentCategory;
   fileName: string;
   sizeBytes?: number | null;
+  isPublic?: boolean;
   downloadUrl: string;
-  createdAt: string;
+  createdAt: string | Date;
 };
 
 type DocumentListProps = {
   documents: DocumentItem[];
   emptyTitle?: string;
   emptyDescription?: string;
+  onDeposit?: () => void;
 };
 
-function formatDate(value: string): string {
+function formatDate(value: string | Date): string {
   return new Date(value).toLocaleDateString('fr-FR', {
     day: 'numeric',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
   });
 }
@@ -35,6 +37,7 @@ export function DocumentList({
   documents,
   emptyTitle = 'Aucun document',
   emptyDescription = 'Aucun fichier disponible pour cette sélection.',
+  onDeposit,
 }: DocumentListProps) {
   if (documents.length === 0) {
     return (
@@ -42,6 +45,12 @@ export function DocumentList({
         <FileText aria-hidden="true" />
         <p className="document-empty-title">{emptyTitle}</p>
         <p className="document-empty-desc">{emptyDescription}</p>
+        {onDeposit ? (
+          <button type="button" className="dash-chip-btn" onClick={onDeposit}>
+            <Plus size={14} aria-hidden="true" />
+            Déposer un fichier
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -51,12 +60,19 @@ export function DocumentList({
       {documents.map((document) => (
         <li key={document.id} className="document-card">
           <div className="document-card-icon" aria-hidden="true">
-            <FileText />
+            <FileText size={18} />
           </div>
           <div className="document-card-body">
-            <span className="document-category-badge">
-              {DOCUMENT_CATEGORY_LABELS[document.category as DocumentCategory] ?? document.category}
-            </span>
+            <div className="document-card-tags">
+              <span className="document-category-badge">
+                {DOCUMENT_CATEGORY_LABELS[document.category as DocumentCategory] ?? document.category}
+              </span>
+              {document.isPublic ? (
+                <span className="dash-status dash-status--success">Public</span>
+              ) : (
+                <span className="dash-status dash-status--neutral">Interne</span>
+              )}
+            </div>
             <h3 className="document-card-title">{document.title}</h3>
             {document.description ? (
               <p className="document-card-desc">{document.description}</p>
@@ -70,7 +86,7 @@ export function DocumentList({
             href={document.downloadUrl}
             download={document.fileName}
           >
-            <Download aria-hidden="true" />
+            <Download size={15} aria-hidden="true" />
             Télécharger
           </a>
         </li>

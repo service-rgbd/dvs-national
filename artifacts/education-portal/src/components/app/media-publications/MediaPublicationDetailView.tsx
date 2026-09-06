@@ -5,7 +5,6 @@ import {
   Camera,
   CheckCircle2,
   Circle,
-  ImageIcon,
   Loader2,
   MinusCircle,
   Video,
@@ -360,19 +359,20 @@ export function MediaPublicationDetailView(props: MediaPublicationDetailViewProp
             {data.files.length === 0 ? (
               <p className="media-detail-text media-detail-text--muted">Aucun fichier attaché.</p>
             ) : (
-              <ul className="media-detail-files">
+              <ul className="media-detail-gallery">
                 {data.files.map((file) => (
-                  <li key={file.id} className="media-detail-file">
-                    <span className="media-detail-file-icon" aria-hidden="true">
-                      {file.mediaType === 'video' ? <Video size={18} /> : <ImageIcon size={18} />}
-                    </span>
-                    <div className="media-detail-file-copy">
-                      <strong>{file.fileName}</strong>
-                      {file.caption ? <p>{file.caption}</p> : null}
-                    </div>
-                    <a href={file.downloadUrl} className="media-detail-file-link" target="_blank" rel="noreferrer">
-                      Ouvrir
+                  <li key={file.id} className="media-detail-gallery-item">
+                    <a href={file.downloadUrl} target="_blank" rel="noreferrer" className="media-detail-gallery-media">
+                      {file.mediaType === 'photo' ? (
+                        <img src={file.downloadUrl} alt={file.caption || file.fileName} />
+                      ) : (
+                        <video src={file.downloadUrl} controls preload="metadata" />
+                      )}
                     </a>
+                    <div className="media-detail-gallery-copy">
+                      <strong>{file.caption || file.fileName}</strong>
+                      <span>{file.mediaType === 'photo' ? 'Photo' : 'Vidéo'}</span>
+                    </div>
                   </li>
                 ))}
               </ul>

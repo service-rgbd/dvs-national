@@ -1,4 +1,4 @@
-import { ArrowRight, Camera, ImageIcon, Inbox, Video } from 'lucide-react';
+import { Camera, ImageIcon, Inbox, Plus, Video } from 'lucide-react';
 import { Link } from 'wouter';
 import type { AppDashboardResponse, MediaPublicationSummary } from '@workspace/api-client-react';
 
@@ -65,12 +65,10 @@ export function MediaScopeBanner({
       {canCreate && actor.cta ? (
         <Link href={actor.cta.href} className="media-scope-banner-cta">
           {actor.cta.label}
-          <ArrowRight size={14} aria-hidden="true" />
         </Link>
       ) : actor.primaryFilter ? (
         <Link href={actor.primaryFilter.href} className="media-scope-banner-cta">
           {actor.primaryFilter.label}
-          <ArrowRight size={14} aria-hidden="true" />
         </Link>
       ) : null}
     </section>
@@ -93,6 +91,8 @@ type MediaPublicationsListProps = {
   statusFilterLabel?: string;
   canCreate: boolean;
   onRetry: () => void;
+  onCreate?: () => void;
+  emptyMessage?: string;
 };
 
 export function MediaPublicationsList({
@@ -102,6 +102,8 @@ export function MediaPublicationsList({
   statusFilterLabel,
   canCreate,
   onRetry,
+  onCreate,
+  emptyMessage,
 }: MediaPublicationsListProps) {
   if (isLoading) {
     return (
@@ -132,44 +134,48 @@ export function MediaPublicationsList({
             {statusFilterLabel ? ` (${statusFilterLabel.toLowerCase()})` : ''}
           </strong>
         </p>
-        {canCreate ? (
-          <p>
-            Déposez photos et vidéos d&apos;une activité déjà autorisée via le formulaire à
-            droite.
-          </p>
-        ) : (
-          <p>Aucun dossier média ne correspond à votre périmètre pour le moment.</p>
-        )}
+        <p>
+          {emptyMessage ??
+            (canCreate
+              ? 'Déposez les photos d’une sortie déjà autorisée.'
+              : 'Aucun dossier média dans ce périmètre.')}
+        </p>
+        {onCreate ? (
+          <button type="button" className="dash-chip-btn" onClick={onCreate}>
+            <Plus size={14} aria-hidden="true" />
+            Nouveau dossier
+          </button>
+        ) : null}
       </div>
     );
   }
 
   return (
-    <ul className="media-publications-table">
+    <ul className="media-card-grid">
       {publications.map((item) => (
         <li key={item.id}>
-          <Link href={appRoutes.mediaPublicationDetail(item.id)} className="media-publication-row">
-            <span className="media-publication-row-icon" aria-hidden="true">
-              {item.coverMediaType === 'video' ? (
-                <Video size={18} />
+          <Link href={appRoutes.mediaPublicationDetail(item.id)} className="media-card">
+            <span className="media-card-cover">
+              {item.coverDownloadUrl && item.coverMediaType === 'photo' ? (
+                <img src={item.coverDownloadUrl} alt="" />
               ) : (
-                <ImageIcon size={18} />
+                <span className="media-card-fallback" aria-hidden="true">
+                  {item.coverMediaType === 'video' ? <Video size={22} /> : <ImageIcon size={22} />}
+                </span>
               )}
+              <span className={mediaStatusBadgeClass(item.status)}>
+                {MEDIA_STATUS_LABELS[item.status]}
+              </span>
             </span>
-            <span className="media-publication-row-main">
+            <span className="media-card-body">
               <strong>{item.title}</strong>
               <span>
                 {item.establishmentName} · {item.activityTitle}
               </span>
-            </span>
-            <span className="media-publication-row-meta">
-              <span className={mediaStatusBadgeClass(item.status)}>
-                {MEDIA_STATUS_LABELS[item.status]}
+              <span className="media-card-meta">
+                {item.fileCount} fichier{item.fileCount > 1 ? 's' : ''} · {formatDate(item.updatedAt)}
               </span>
-              <span>{item.fileCount} fichier(s)</span>
-              <span>{formatDate(item.updatedAt)}</span>
             </span>
-            <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </li>
       ))}

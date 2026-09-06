@@ -1493,6 +1493,16 @@ components:
           type: string
           format: uuid
           nullable: true
+        drenaName:
+          type: string
+          nullable: true
+        drenaContactName:
+          type: string
+          nullable: true
+        drenaContactEmail:
+          type: string
+          format: email
+          nullable: true
       required:
         - primaryRoleCode
         - primaryRoleLabel

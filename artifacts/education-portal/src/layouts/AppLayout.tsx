@@ -1,26 +1,18 @@
-import {
-  ExternalLink,
-  LogOut,
-  Menu,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Search,
-} from 'lucide-react';
-import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { LogOut, Menu, Settings, X } from 'lucide-react';
+import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 
-import { Button } from '@/components/ui/button';
 import { InstitutionBrand } from '@/components/brand/InstitutionBrand';
-import { NavItemWithSub } from '@/components/app/layout/NavItemWithSub';
+import { DrenContactButton } from '@/components/app/layout/DrenContactButton';
 import { NotificationBell } from '@/components/app/layout/NotificationBell';
-import { getAccessibleModules } from '@/config/app-modules';
-import { groupAccessibleModules } from '@/config/app-nav-groups';
-import { appNavSubMenus } from '@/config/app-nav-submenus';
+import { ProfileMenu } from '@/components/app/layout/ProfileMenu';
+import { canAccessModule, getAccessibleModules } from '@/config/app-modules';
 import { getModuleIcon } from '@/config/app-module-icons';
-import { appRoutes, publicRoutes } from '@/content/routes';
+import { appModules } from '@/config/app-modules';
 import { isAdminPath } from '@/config/admin-sections';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { appRoutes, publicRoutes } from '@/content/routes';
 import { useAuthLogout, useAuthMe } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -28,7 +20,17 @@ type AppLayoutProps = {
   children: ReactNode;
 };
 
-const SIDEBAR_STORAGE_KEY = 'pnigvs-sidebar-collapsed';
+type OverlayKind = 'menu' | null;
+
+const TOP_NAV_IDS = [
+  'dashboard',
+  'establishments',
+  'activities',
+  'requests',
+  'mediaPublications',
+  'documents',
+  'statistics',
+] as const;
 
 function userInitials(fullName: string): string {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
@@ -44,7 +46,7 @@ function isPathActive(location: string, href: string, isDashboard: boolean): boo
   if (href === appRoutes.administration) {
     return isAdminPath(location);
   }
-  return location === href || location.startsWith(`${href}?`) || location.startsWith(`${href}#`);
+  return location === href || location.startsWith(`${href}/`) || location.startsWith(`${href}?`) || location.startsWith(`${href}#`);
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
@@ -55,66 +57,46 @@ export function AppLayout({ children }: AppLayoutProps) {
   const user = data?.user;
   const roleCodes = user?.roles.map((role) => role.code) ?? [];
   const modules = getAccessibleModules(roleCodes);
-  const navGroups = groupAccessibleModules(modules);
-
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({
-    requests: true,
-    administration: true,
-  });
+  const topNav = TOP_NAV_IDS.map((id) => modules.find((module) => module.id === id)).filter(
+    (module): module is NonNullable<typeof module> => Boolean(module),
+  );
+  const administrationModule = appModules.find((module) => module.id === 'administration');
+  const canOpenSettings = administrationModule
+    ? canAccessModule(administrationModule, roleCodes)
+    : false;
+  const settingsHref = appRoutes.administration;
+  const [overlay, setOverlay] = useState<OverlayKind>(null);
+  const [headerHeight, setHeaderHeight] = useState(52);
+  const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(SIDEBAR_STORAGE_KEY);
-    if (stored === '1') setSidebarCollapsed(true);
+    setOverlay(null);
+  }, [location]);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const update = () => setHeaderHeight(Math.round(header.getBoundingClientRect().height));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, sidebarCollapsed ? '1' : '0');
-  }, [sidebarCollapsed]);
-
-  useEffect(() => {
-    setOpenSubMenus((current) => {
-      const next = { ...current };
-      if (location.startsWith(appRoutes.requests)) {
-        next.requests = true;
-      }
-      if (location.startsWith(appRoutes.administration)) {
-        next.administration = true;
-      }
-      if (location.startsWith(appRoutes.establishments)) {
-        next.establishments = true;
-      }
-      return next;
-    });
-  }, [location]);
-
-  useEffect(() => {
-    setMobileNavOpen(false);
-  }, [location]);
-
-  useEffect(() => {
-    if (!isMobile) {
-      setMobileNavOpen(false);
-      return;
+    if (!isMobile && overlay === 'menu') {
+      setOverlay(null);
     }
+  }, [isMobile, overlay]);
 
-    document.body.style.overflow = mobileNavOpen ? 'hidden' : '';
+  useEffect(() => {
+    document.body.style.overflow = overlay ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isMobile, mobileNavOpen]);
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setMobileNavOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [overlay]);
 
   const logout = useAuthLogout({
     mutation: {
@@ -125,200 +107,149 @@ export function AppLayout({ children }: AppLayoutProps) {
     },
   });
 
-  function toggleSubMenu(moduleId: string) {
-    setOpenSubMenus((current) => ({ ...current, [moduleId]: !current[moduleId] }));
-  }
-
-  function toggleSidebar() {
-    if (isMobile) {
-      setMobileNavOpen((value) => !value);
-      return;
+  function closeOverlay() {
+    setOverlay(null);
+    if (overlay === 'menu') {
+      menuButtonRef.current?.focus();
     }
-
-    setSidebarCollapsed((value) => !value);
   }
-
-  const isSidebarCollapsed = !isMobile && sidebarCollapsed;
-  const sidebarState = isMobile ? 'mobile' : sidebarCollapsed ? 'collapsed' : 'expanded';
 
   const shellClass = [
+    'dash-shell',
     'app-pro-shell',
-    isSidebarCollapsed ? 'is-sidebar-collapsed' : '',
-    isMobile && mobileNavOpen ? 'is-mobile-nav-open' : '',
+    overlay ? 'is-sheet-open' : '',
   ]
     .filter(Boolean)
     .join(' ');
 
+  const sheetStyle = { '--dash-sheet-top': `${headerHeight}px` } as CSSProperties;
+
+  function renderNavLinks(idPrefix: string) {
+    return topNav.map((module) => {
+      const isDashboard = module.href === appRoutes.app;
+      const isActive = isPathActive(location, module.href, isDashboard);
+
+      const Icon = getModuleIcon(module.id);
+
+      return (
+        <Link
+          key={`${idPrefix}-${module.id}`}
+          href={module.href}
+          className={isActive ? 'dash-nav-link is-active' : 'dash-nav-link'}
+          aria-current={isActive ? 'page' : undefined}
+          title={module.description}
+        >
+          <span className={`dash-nav-icon${module.id === 'mediaPublications' ? ' dash-nav-icon--camera' : ''}`} aria-hidden="true">
+            <Icon size={16} strokeWidth={1.75} />
+          </span>
+          {module.shortLabel ?? module.label}
+        </Link>
+      );
+    });
+  }
+
   return (
-    <div className={shellClass} data-sidebar-state={sidebarState}>
-      {isMobile ? (
-        <button
-          type="button"
-          className="app-pro-mobile-nav-backdrop"
-          aria-label="Fermer le menu"
-          aria-hidden={!mobileNavOpen}
-          tabIndex={mobileNavOpen ? 0 : -1}
-          onClick={() => setMobileNavOpen(false)}
-        />
-      ) : null}
+    <div className={shellClass}>
+      <header className="dash-topnav" ref={headerRef}>
+        <InstitutionBrand variant="app-top" href={appRoutes.app} />
 
-      <aside id="app-pro-sidebar" className="app-pro-sidebar" aria-label="Navigation métier">
-        <div className="app-pro-sidebar-brand">
-          <InstitutionBrand variant="app-sidebar" href={appRoutes.app} />
-        </div>
-
-        {user ? (
-          <Link href={appRoutes.profile} className="app-pro-sidebar-user">
-            <span className="app-pro-avatar" aria-hidden="true">
-              {userInitials(user.fullName)}
-            </span>
-            <div className="app-pro-sidebar-user-info">
-              <span className="app-pro-sidebar-user-name">{user.fullName}</span>
-              <span className="app-pro-sidebar-user-role">
-                {user.roles[0]?.label ?? 'Agent PNIGVS'}
-              </span>
-            </div>
-          </Link>
-        ) : null}
-
-        <nav className="app-pro-nav" aria-label="Menu métier">
-          {navGroups.map((group) => (
-            <div className="app-pro-nav-group" key={group.id}>
-              <p className="app-pro-nav-group-label">{group.label}</p>
-              <ul>
-                {group.modules.map((module) => {
-                  const Icon = getModuleIcon(module.id);
-                  const subItems = appNavSubMenus[module.id];
-                  const isDashboard = module.href === appRoutes.app;
-                  const isActive = isPathActive(location, module.href, isDashboard);
-                  const isOpen = openSubMenus[module.id] ?? false;
-
-                  if (subItems?.length) {
-                    return (
-                      <NavItemWithSub
-                        key={module.id}
-                        moduleId={module.id}
-                        label={module.label}
-                        description={module.description}
-                        href={module.href}
-                        isActive={isActive}
-                        isOpen={isOpen}
-                        location={location}
-                        icon={<Icon size={18} />}
-                        subItems={subItems}
-                        onToggle={() => toggleSubMenu(module.id)}
-                        onOpen={() =>
-                          setOpenSubMenus((current) => ({ ...current, [module.id]: true }))
-                        }
-                      />
-                    );
-                  }
-
-                  return (
-                    <li key={module.id}>
-                      <Link
-                        href={module.href}
-                        className={isActive ? 'app-pro-nav-link is-active' : 'app-pro-nav-link'}
-                        aria-current={isActive ? 'page' : undefined}
-                        title={module.description}
-                      >
-                        <span className="app-pro-nav-icon" aria-hidden="true">
-                          <Icon size={18} />
-                        </span>
-                        <span className="app-pro-nav-text">{module.label}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+        <nav className="dash-topnav-links" aria-label="Menu métier">
+          {renderNavLinks('desktop')}
         </nav>
 
-        <div className="app-pro-sidebar-footer">
-          <Link href={publicRoutes.home} className="app-pro-footer-link">
-            <ExternalLink size={14} aria-hidden="true" />
-            Portail public
-          </Link>
-        </div>
-      </aside>
-
-      <div className="app-pro-main">
-        <header className="app-pro-topbar">
-          <button
-            type="button"
-            className={`app-pro-icon-btn app-pro-menu-btn${
-              isSidebarCollapsed ? ' app-pro-menu-btn--expand' : ' app-pro-menu-btn--collapse'
-            }`}
-            aria-label={
-              isMobile
-                ? mobileNavOpen
-                  ? 'Fermer le menu'
-                  : 'Ouvrir le menu'
-                : sidebarCollapsed
-                  ? 'Développer le menu'
-                  : 'Réduire le menu'
-            }
-            aria-expanded={isMobile ? mobileNavOpen : !sidebarCollapsed}
-            aria-controls="app-pro-sidebar"
-            aria-pressed={isMobile ? mobileNavOpen : sidebarCollapsed}
-            onClick={toggleSidebar}
-          >
-            {isMobile ? (
-              <Menu size={18} aria-hidden="true" />
-            ) : sidebarCollapsed ? (
-              <PanelLeftOpen size={18} aria-hidden="true" />
-            ) : (
-              <PanelLeftClose size={18} aria-hidden="true" />
-            )}
-          </button>
-
-          <form
-            className="app-pro-search"
-            role="search"
-            onSubmit={(event) => {
-              event.preventDefault();
-              window.location.href = publicRoutes.recherche;
-            }}
-          >
-            <Search size={18} aria-hidden="true" />
-            <input
-              type="search"
-              placeholder="Rechercher un dossier, un usager, un document…"
-              aria-label="Recherche globale"
-            />
-          </form>
-
-          <div className="app-pro-topbar-actions">
+        <div className="dash-topnav-actions">
+          <DrenContactButton />
+          <div className="dash-notif">
             <NotificationBell />
+          </div>
 
-            {user ? (
-              <Link href={appRoutes.profile} className="app-pro-user">
-                <span className="app-pro-avatar" aria-hidden="true">
-                  {userInitials(user.fullName)}
-                </span>
-                <span className="app-pro-user-name">{user.fullName}</span>
+          {!isMobile && user ? (
+            <ProfileMenu
+              fullName={user.fullName}
+              initials={userInitials(user.fullName)}
+              canOpenSettings={canOpenSettings}
+              settingsHref={settingsHref}
+              settingsActive={isAdminPath(location)}
+              onLogout={() => logout.mutate()}
+              logoutPending={logout.isPending}
+            />
+          ) : null}
+
+          {isMobile ? (
+            <button
+              ref={menuButtonRef}
+              type="button"
+              className="dash-icon-btn dash-menu-toggle"
+              aria-label={overlay === 'menu' ? 'Fermer le menu' : 'Ouvrir le menu'}
+              aria-expanded={overlay === 'menu'}
+              aria-controls="dash-mobile-nav"
+              onClick={() => setOverlay(overlay === 'menu' ? null : 'menu')}
+            >
+              {overlay === 'menu' ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+            </button>
+          ) : null}
+        </div>
+      </header>
+
+      {isMobile && overlay === 'menu' ? (
+        <nav
+          id="dash-mobile-nav"
+          className="dash-sheet dash-sheet--menu"
+          aria-label="Menu métier"
+          style={sheetStyle}
+        >
+          <header className="dash-sheet-head">
+            <div>
+              <strong>Menu</strong>
+              <p>Navigation</p>
+            </div>
+            <button
+              type="button"
+              className="dash-icon-btn dash-icon-btn--ghost"
+              aria-label="Fermer le menu"
+              onClick={closeOverlay}
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          </header>
+          {user ? (
+            <Link href={appRoutes.profile} className="dash-sheet-profile" onClick={closeOverlay}>
+              <span className="dash-avatar" aria-hidden="true">
+                {userInitials(user.fullName)}
+              </span>
+              <span>
+                <strong>{user.fullName}</strong>
+                <em>Mon profil</em>
+              </span>
+            </Link>
+          ) : null}
+          <div className="dash-sheet-body dash-sheet-nav">
+            {renderNavLinks('mobile')}
+          </div>
+          <footer className="dash-sheet-foot dash-sheet-foot--actions">
+            <DrenContactButton variant="sheet" />
+            {canOpenSettings ? (
+              <Link href={settingsHref} className="dash-sheet-action" onClick={closeOverlay}>
+                <Settings size={16} aria-hidden="true" />
+                Administration
               </Link>
             ) : null}
-
-            <Button
+            <button
               type="button"
-              variant="outline"
-              size="sm"
-              className="app-pro-logout app-pro-btn-outline"
+              className="dash-sheet-action"
               onClick={() => logout.mutate()}
               disabled={logout.isPending}
             >
-              <LogOut aria-hidden="true" />
+              <LogOut size={16} aria-hidden="true" />
               Déconnexion
-            </Button>
-          </div>
-        </header>
+            </button>
+          </footer>
+        </nav>
+      ) : null}
 
-        <main className="app-pro-content">
-          <div className="app-pro-inner">{children}</div>
-        </main>
-      </div>
+      <main className="dash-main app-pro-content">
+        <div className="dash-main-inner app-pro-inner">{children}</div>
+      </main>
     </div>
   );
 }

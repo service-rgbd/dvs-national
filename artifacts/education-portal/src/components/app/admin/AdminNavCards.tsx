@@ -12,7 +12,7 @@ const SECTION_HINTS: Record<AdminSectionId, string> = {
   accounts: 'Cycle de vie et provisionnement',
   roles: 'RBAC, modules et workflow',
   settings: 'Institution, sécurité, variables',
-  audit: 'Traçabilité et conformité',
+  audit: 'Activités ↔ dossiers d’autorisation',
 };
 
 export function AdminNavCards({ exclude = 'overview' }: AdminNavCardsProps) {

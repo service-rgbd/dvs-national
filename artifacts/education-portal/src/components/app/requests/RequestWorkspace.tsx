@@ -153,12 +153,9 @@ export function RequestsList({
           <strong>Aucune demande{statusFilterLabel ? ` (${statusFilterLabel.toLowerCase()})` : ''}</strong>
         </p>
         {canCreate ? (
-          <p>Utilisez le formulaire à droite (étape 2).</p>
+          <p>Créez un dossier à partir d&apos;une activité.</p>
         ) : (
-          <p>
-            Aucun dossier ne correspond à votre périmètre pour ce filtre. Consultez un autre statut
-            ou attendez qu&apos;un établissement soumette une demande.
-          </p>
+          <p>Aucun dossier pour ce filtre.</p>
         )}
       </div>
     );
@@ -184,7 +181,9 @@ export function RequestsList({
             const actionLabel = canCreate
               ? request.status === 'draft'
                 ? 'Compléter'
-                : 'Ouvrir'
+                : request.status === 'returned_for_correction'
+                  ? 'Corriger'
+                  : 'Ouvrir'
               : 'Instruire';
 
             return (

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
 import { Link } from 'wouter';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
@@ -9,19 +8,28 @@ import {
 
 import { AppProEmpty } from '@/components/app/pro/AppProEmpty';
 import { AppProLoading } from '@/components/app/pro/AppProLoading';
+import { DashFilterBar } from '@/components/dash/DashFilterBar';
+import { DashSurface } from '@/components/dash/DashSurface';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useEstablishmentFilters } from '@/hooks/use-establishment-filters';
 import { appRoutes } from '@/content/routes';
 
 const TEACHING_ORDERS = ['LAIC', 'CATHOLIQUE', 'ISLAMIQUE', 'METHODISTE', 'AUTRE_CONFESSION'] as const;
 
-const STATUS_FILTERS = [
-  { value: '', label: 'Tous' },
+const STATUS_OPTIONS = [
+  { value: '', label: 'Tous les statuts' },
   { value: 'active', label: 'Actifs' },
   { value: 'pending', label: 'En attente' },
   { value: 'inactive', label: 'Inactifs' },
   { value: 'archived', label: 'Archivés' },
 ] as const;
+
+const STATUS_LABELS: Record<string, string> = {
+  active: 'Actif',
+  pending: 'En attente',
+  inactive: 'Inactif',
+  archived: 'Archivé',
+};
 
 const SORT_OPTIONS = [
   { value: 'name', label: 'Nom (A→Z)' },
@@ -85,223 +93,188 @@ export function EstablishmentDirectory({
 
   const establishments = data?.data ?? [];
   const pagination = data?.pagination;
+  const total = pagination?.total ?? establishments.length;
+
+  const resetFilters = () => {
+    setSearchDraft('');
+    updateFilters(
+      {
+        search: '',
+        type: '',
+        status: '',
+        sort: 'name',
+        order: 'asc',
+      },
+      true,
+    );
+  };
 
   return (
     <div className="app-directory">
-      <section className="app-directory-toolbar app-directory-toolbar--pro" aria-label="Recherche et filtres annuaire">
-        <form
-          className="app-directory-search app-directory-search--wide"
-          role="search"
-          onSubmit={(event) => {
-            event.preventDefault();
-            updateFilters({ search: searchDraft }, true);
-          }}
-        >
-          <label htmlFor="app-establishment-search">Rechercher dans votre périmètre</label>
-          <div className="app-directory-search-row">
-            <Search size={16} aria-hidden="true" />
-            <input
-              id="app-establishment-search"
-              type="search"
-              value={searchDraft}
-              onChange={(event) => setSearchDraft(event.target.value)}
-              placeholder="Nom, code, localité, région ou DRENA…"
-              autoComplete="off"
-            />
-          </div>
-        </form>
-
-        <div className="app-directory-status-row" role="group" aria-label="Filtrer par statut">
-          {STATUS_FILTERS.map((option) => (
-            <button
-              key={option.value || 'all'}
-              type="button"
-              className={`app-directory-pill${filters.status === option.value ? ' app-directory-pill--active' : ''}`}
-              aria-pressed={filters.status === option.value}
-              onClick={() => updateFilters({ status: option.value }, true)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="app-directory-inline-filters">
-          <div className="app-directory-field app-directory-field--compact">
-            <label htmlFor="app-filter-type">Ordre d&apos;enseignement</label>
-            <select
-              id="app-filter-type"
-              className="app-pro-select"
-              value={filters.type}
-              onChange={(event) => updateFilters({ type: event.target.value }, true)}
-            >
-              <option value="">Tous les ordres</option>
-              {TEACHING_ORDERS.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="app-directory-field app-directory-field--compact">
-            <label htmlFor="app-filter-sort">Tri</label>
-            <select
-              id="app-filter-sort"
-              className="app-pro-select"
-              value={filters.sort}
-              onChange={(event) =>
-                updateFilters({ sort: event.target.value as typeof filters.sort }, true)
-              }
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          {hasActiveFilters(filters) ? (
-            <button
-              type="button"
-              className="btn-secondary app-directory-reset"
-              onClick={() => {
-                setSearchDraft('');
-                updateFilters(
-                  {
-                    search: '',
-                    type: '',
-                    status: '',
-                    sort: 'name',
-                    order: 'asc',
-                  },
-                  true,
-                );
-              }}
-            >
-              Réinitialiser
-            </button>
-          ) : null}
-        </div>
-      </section>
-
-      {isLoading ? <AppProLoading label="Chargement de l'annuaire…" inline /> : null}
-
-      {isError ? (
-        <AppProEmpty
-          title="Annuaire indisponible"
-          description="Impossible de charger les établissements."
-          action={
-            <button type="button" className="btn-secondary" onClick={() => refetch()}>
-              Réessayer
-            </button>
-          }
+      <DashSurface>
+        <DashFilterBar
+          search={searchDraft}
+          searchPlaceholder="Nom, code, localité, DRENA…"
+          onSearchChange={setSearchDraft}
+          filters={[
+            {
+              id: 'status',
+              label: 'Statut',
+              value: filters.status,
+              onChange: (value) => updateFilters({ status: value }, true),
+              options: [...STATUS_OPTIONS],
+            },
+            {
+              id: 'type',
+              label: "Ordre d'enseignement",
+              value: filters.type,
+              onChange: (value) => updateFilters({ type: value }, true),
+              options: [
+                { value: '', label: 'Tous les ordres' },
+                ...TEACHING_ORDERS.map((value) => ({ value, label: value })),
+              ],
+            },
+            {
+              id: 'sort',
+              label: 'Tri',
+              value: filters.sort,
+              onChange: (value) =>
+                updateFilters({ sort: value as typeof filters.sort }, true),
+              options: [...SORT_OPTIONS],
+            },
+          ]}
         />
-      ) : null}
 
-      {!isLoading && !isError && establishments.length === 0 ? (
-        <AppProEmpty
-          title="Aucun établissement trouvé"
-          description="Affinez votre recherche ou modifiez les filtres actifs."
-          action={
-            hasActiveFilters(filters) ? (
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => {
-                  setSearchDraft('');
-                  updateFilters(
-                    {
-                      search: '',
-                      type: '',
-                      status: '',
-                      sort: 'name',
-                      order: 'asc',
-                    },
-                    true,
-                  );
-                }}
-              >
-                Réinitialiser
+        {isLoading ? <AppProLoading label="Chargement de l'annuaire…" inline /> : null}
+
+        {isError ? (
+          <AppProEmpty
+            title="Annuaire indisponible"
+            description="Impossible de charger les établissements."
+            action={
+              <button type="button" className="btn-secondary" onClick={() => refetch()}>
+                Réessayer
               </button>
-            ) : undefined
-          }
-        />
-      ) : null}
+            }
+          />
+        ) : null}
 
-      {!isLoading && !isError && establishments.length > 0 ? (
-        <>
-          <p className="app-directory-summary" role="status">
-            <strong>{(pagination?.total ?? establishments.length).toLocaleString('fr-FR')}</strong>{' '}
-            établissement{(pagination?.total ?? 0) > 1 ? 's' : ''}
-            {isFetching ? ' — mise à jour…' : ''}
-          </p>
+        {!isLoading && !isError && establishments.length === 0 ? (
+          <AppProEmpty
+            title="Aucun établissement trouvé"
+            description="Affinez votre recherche ou modifiez les filtres actifs."
+            action={
+              hasActiveFilters(filters) ? (
+                <button type="button" className="btn-secondary" onClick={resetFilters}>
+                  Réinitialiser
+                </button>
+              ) : undefined
+            }
+          />
+        ) : null}
 
-          <div className="app-directory-table-wrap">
-            <table className="app-directory-table">
-              <caption className="sr-only">Annuaire des établissements scolaires</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Code</th>
-                  <th scope="col">Établissement</th>
-                  <th scope="col">Région</th>
-                  <th scope="col">Localité</th>
-                  <th scope="col">DRENA</th>
-                  <th scope="col">Ordre</th>
-                  <th scope="col">Cycle</th>
-                  <th scope="col">Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                {establishments.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <code>{item.establishmentCode}</code>
-                    </td>
-                    <td>
-                      <Link href={detailHref(item.id)} className="app-directory-link">
-                        {item.name}
-                      </Link>
-                    </td>
-                    <td>{item.region.name}</td>
-                    <td>{item.locality.name}</td>
-                    <td>{item.drena.name}</td>
-                    <td>{item.teachingOrder ?? '—'}</td>
-                    <td>{item.authorizedCycle ?? '—'}</td>
-                    <td>
-                      <span className={`app-directory-status app-directory-status--${item.status}`}>
-                        {item.status}
-                      </span>
-                    </td>
+        {!isLoading && !isError && establishments.length > 0 ? (
+          <>
+            <p className="dash-filter-hint app-directory-summary" role="status">
+              <strong>{total.toLocaleString('fr-FR')}</strong> établissement
+              {total > 1 ? 's' : ''}
+              {isFetching ? ' — mise à jour…' : ''}
+              {hasActiveFilters(filters) ? (
+                <>
+                  {' · '}
+                  <button type="button" className="app-directory-reset-inline" onClick={resetFilters}>
+                    Réinitialiser
+                  </button>
+                </>
+              ) : null}
+            </p>
+
+            <ul className="app-directory-cards">
+              {establishments.map((item) => (
+                <li key={`card-${item.id}`}>
+                  <Link href={detailHref(item.id)} className="app-directory-card">
+                    <strong>{item.name}</strong>
+                    <span>
+                      {item.establishmentCode}
+                      {' · '}
+                      {item.locality.name}
+                    </span>
+                    <em className={`app-directory-status app-directory-status--${item.status}`}>
+                      {STATUS_LABELS[item.status] ?? item.status}
+                    </em>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <div className="dash-table-wrap">
+              <table className="dash-table">
+                <caption className="sr-only">Annuaire des établissements scolaires</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Code</th>
+                    <th scope="col">Établissement</th>
+                    <th scope="col">Région</th>
+                    <th scope="col">Localité</th>
+                    <th scope="col">DRENA</th>
+                    <th scope="col">Ordre</th>
+                    <th scope="col">Cycle</th>
+                    <th scope="col">Statut</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {establishments.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <code>{item.establishmentCode}</code>
+                      </td>
+                      <td>
+                        <Link href={detailHref(item.id)} className="dash-table-primary">
+                          {item.name}
+                        </Link>
+                      </td>
+                      <td>{item.region.name}</td>
+                      <td>{item.locality.name}</td>
+                      <td>{item.drena.name}</td>
+                      <td>{item.teachingOrder ?? '—'}</td>
+                      <td>{item.authorizedCycle ?? '—'}</td>
+                      <td>
+                        <span className={`app-directory-status app-directory-status--${item.status}`}>
+                          {STATUS_LABELS[item.status] ?? item.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          {pagination && pagination.totalPages > 1 ? (
-            <nav className="app-directory-pagination" aria-label="Pagination">
-              <button
-                type="button"
-                className="btn-secondary"
-                disabled={pagination.page <= 1}
-                onClick={() => updateFilters({ page: pagination.page - 1 })}
-              >
-                Précédent
-              </button>
-              <span>
-                Page {pagination.page} / {pagination.totalPages}
-              </span>
-              <button
-                type="button"
-                className="btn-secondary"
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => updateFilters({ page: pagination.page + 1 })}
-              >
-                Suivant
-              </button>
-            </nav>
-          ) : null}
-        </>
-      ) : null}
+            {pagination && pagination.totalPages > 1 ? (
+              <nav className="app-directory-pagination" aria-label="Pagination">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={pagination.page <= 1}
+                  onClick={() => updateFilters({ page: pagination.page - 1 })}
+                >
+                  Précédent
+                </button>
+                <span>
+                  Page {pagination.page} / {pagination.totalPages}
+                </span>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => updateFilters({ page: pagination.page + 1 })}
+                >
+                  Suivant
+                </button>
+              </nav>
+            ) : null}
+          </>
+        ) : null}
+      </DashSurface>
     </div>
   );
 }

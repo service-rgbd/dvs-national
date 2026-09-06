@@ -2,6 +2,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import { Loader2, UserPlus } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { userInitials } from '@/components/app/admin/admin-utils';
 import { AdminParamGroup } from '@/components/app/admin/AdminParamGroup';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -193,7 +194,7 @@ export function AdminAccountsManager({ headingId = 'admin-accounts-manager-headi
       </form>
 
       <div className="admin-accounts-list-head">
-        <h3 id={headingId}>Comptes existants</h3>
+        <h3>Comptes existants</h3>
         <Input
           type="search"
           placeholder="Rechercher par nom ou e-mail…"
@@ -204,46 +205,102 @@ export function AdminAccountsManager({ headingId = 'admin-accounts-manager-headi
       </div>
 
       {usersLoading ? (
-        <p>Chargement des comptes…</p>
+        <p className="admin-accounts-empty">Chargement des comptes…</p>
       ) : users.length === 0 ? (
         <p className="admin-accounts-empty">Aucun compte directeur enregistré.</p>
       ) : (
-        <div className="app-pro-admin-table-wrap">
-          <table className="app-pro-admin-table">
-            <caption className="sr-only">Comptes directeurs et fondateurs</caption>
-            <thead>
-              <tr>
-                <th scope="col">Nom</th>
-                <th scope="col">E-mail</th>
-                <th scope="col">Profil</th>
-                <th scope="col">Établissement</th>
-                <th scope="col">Statut</th>
-                <th scope="col">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.fullName}</td>
-                  <td>{user.email}</td>
-                  <td>{user.roleLabel}</td>
-                  <td>{user.establishmentName ?? '—'}</td>
-                  <td>{user.status === 'active' ? 'Actif' : 'Inactif'}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn-secondary btn-secondary--sm"
-                      disabled={updateUser.isPending}
-                      onClick={() => toggleStatus(user.id, user.status)}
-                    >
-                      {user.status === 'active' ? 'Désactiver' : 'Activer'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="admin-table-desktop">
+            <div className="app-pro-admin-table-wrap">
+              <table className="app-pro-admin-table">
+                <caption className="sr-only">Comptes directeurs et fondateurs</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">E-mail</th>
+                    <th scope="col">Profil</th>
+                    <th scope="col">Établissement</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td>{user.fullName}</td>
+                      <td>{user.email}</td>
+                      <td>{user.roleLabel}</td>
+                      <td>{user.establishmentName ?? '—'}</td>
+                      <td>
+                        <span
+                          className={`admin-status-badge admin-status-badge--${user.status === 'active' ? 'active' : 'inactive'}`}
+                        >
+                          {user.status === 'active' ? 'Actif' : 'Inactif'}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn-secondary btn-secondary--sm"
+                          disabled={updateUser.isPending}
+                          onClick={() => toggleStatus(user.id, user.status)}
+                        >
+                          {user.status === 'active' ? 'Désactiver' : 'Activer'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <ul className="admin-cards">
+            {users.map((user) => (
+              <li key={user.id} className="admin-card">
+                <div className="admin-card-head">
+                  <span className="admin-card-avatar" aria-hidden="true">
+                    {userInitials(user.fullName)}
+                  </span>
+                  <div>
+                    <p className="admin-card-title">{user.fullName}</p>
+                    <p className="admin-card-meta">{user.email}</p>
+                  </div>
+                </div>
+                <dl className="admin-card-dl">
+                  <div>
+                    <dt>Profil</dt>
+                    <dd>{user.roleLabel}</dd>
+                  </div>
+                  <div>
+                    <dt>Établissement</dt>
+                    <dd>{user.establishmentName ?? '—'}</dd>
+                  </div>
+                  <div>
+                    <dt>Statut</dt>
+                    <dd>
+                      <span
+                        className={`admin-status-badge admin-status-badge--${user.status === 'active' ? 'active' : 'inactive'}`}
+                      >
+                        {user.status === 'active' ? 'Actif' : 'Inactif'}
+                      </span>
+                    </dd>
+                  </div>
+                </dl>
+                <div className="admin-card-actions">
+                  <button
+                    type="button"
+                    className="btn-secondary btn-secondary--sm"
+                    disabled={updateUser.isPending}
+                    onClick={() => toggleStatus(user.id, user.status)}
+                  >
+                    {user.status === 'active' ? 'Désactiver' : 'Activer'}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </AdminParamGroup>
   );

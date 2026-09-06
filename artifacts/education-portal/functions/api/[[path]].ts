@@ -1,4 +1,4 @@
-const DEFAULT_API_ORIGIN = 'https://api-dvs.voyagesdecouvertes-menaet.ci';
+const DEFAULT_API_ORIGIN = 'https://pnigvs-api.rafiils120.workers.dev';
 
 interface Env {
   API_ORIGIN?: string;

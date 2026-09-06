@@ -14,6 +14,7 @@ export type AdminSectionId = 'overview' | 'accounts' | 'roles' | 'settings' | 'a
 export type AdminSection = {
   id: AdminSectionId;
   label: string;
+  shortLabel: string;
   description: string;
   href: string;
   icon: LucideIcon;
@@ -23,6 +24,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   {
     id: 'overview',
     label: 'Vue d\'ensemble',
+    shortLabel: 'Aperçu',
     description: 'Session active, périmètre et raccourcis administration.',
     href: appRoutes.administration,
     icon: LayoutDashboard,
@@ -30,6 +32,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   {
     id: 'accounts',
     label: 'Comptes agents',
+    shortLabel: 'Comptes',
     description: 'Création, désactivation et réinitialisation des accès.',
     href: appRoutes.adminAccounts,
     icon: Users,
@@ -37,6 +40,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   {
     id: 'roles',
     label: 'Rôles & permissions',
+    shortLabel: 'Rôles',
     description: 'Matrice RBAC et périmètres géographiques.',
     href: appRoutes.adminRoles,
     icon: Shield,
@@ -44,6 +48,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   {
     id: 'settings',
     label: 'Paramètres',
+    shortLabel: 'Réglages',
     description: 'Configuration plateforme, sécurité et variables.',
     href: appRoutes.adminSettings,
     icon: Settings,
@@ -51,7 +56,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   {
     id: 'audit',
     label: 'Journal d\'activité',
-    description: 'Historique des événements et activités métier.',
+    shortLabel: 'Journal',
+    description: 'Traçabilité activités scolaires et demandes d’autorisation.',
     href: appRoutes.adminAudit,
     icon: FileText,
   },

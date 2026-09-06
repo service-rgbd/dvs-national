@@ -72,9 +72,18 @@ type ActivitiesListProps = {
   isLoading: boolean;
   isError: boolean;
   onRetry: () => void;
+  emptyMessage?: string;
+  onCreate?: () => void;
 };
 
-export function ActivitiesList({ activities, isLoading, isError, onRetry }: ActivitiesListProps) {
+export function ActivitiesList({
+  activities,
+  isLoading,
+  isError,
+  onRetry,
+  emptyMessage,
+  onCreate,
+}: ActivitiesListProps) {
   if (isLoading) {
     return (
       <div className="activities-list-state" role="status">
@@ -98,8 +107,14 @@ export function ActivitiesList({ activities, isLoading, isError, onRetry }: Acti
     return (
       <div className="activities-list-empty">
         <Plus size={28} strokeWidth={1.5} aria-hidden="true" />
-        <p><strong>Aucune activité enregistrée</strong></p>
-        <p>Utilisez le formulaire à droite pour créer votre première activité scolaire.</p>
+        <p><strong>Aucune activité</strong></p>
+        <p>{emptyMessage ?? 'Aucune activité enregistrée pour le moment.'}</p>
+        {onCreate ? (
+          <button type="button" className="dash-chip-btn" onClick={onCreate}>
+            <Plus size={14} aria-hidden="true" />
+            Nouvelle activité
+          </button>
+        ) : null}
       </div>
     );
   }

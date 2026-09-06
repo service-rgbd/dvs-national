@@ -3,6 +3,7 @@ import { EstablishmentDirectory } from '@/components/app/establishments/Establis
 import { EstablishmentScopeBanner } from '@/components/app/establishments/EstablishmentScopeBanner';
 import { AppProLoading } from '@/components/app/pro/AppProLoading';
 import { AppProPageShell } from '@/components/app/pro/AppProPageShell';
+import { DashSurface } from '@/components/dash/DashSurface';
 import { useGetAppDashboard } from '@workspace/api-client-react';
 
 export default function AppEstablishmentsPage() {
@@ -11,7 +12,7 @@ export default function AppEstablishmentsPage() {
   return (
     <AppPage
       title="Annuaire des établissements"
-      description="Référentiel filtré selon votre périmètre — recherche intelligente, filtres et fiches scolaires."
+      description="Référentiel filtré selon votre périmètre."
     >
       <AppProPageShell>
         {isLoading ? <AppProLoading label="Chargement du référentiel…" /> : null}
@@ -30,7 +31,9 @@ export default function AppEstablishmentsPage() {
 
         {data && !isLoading ? (
           <>
-            <EstablishmentScopeBanner profile={data.profile} kpis={data.kpis} />
+            <DashSurface>
+              <EstablishmentScopeBanner profile={data.profile} kpis={data.kpis} />
+            </DashSurface>
             <EstablishmentDirectory />
           </>
         ) : null}

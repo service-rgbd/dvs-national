@@ -3,7 +3,6 @@ import {
   Building2,
   CheckCircle2,
   Circle,
-  FileCheck,
   Loader2,
   MinusCircle,
   XCircle,
@@ -35,6 +34,8 @@ import {
   WORKFLOW_ACTION_LABELS,
   statusBadgeClass,
 } from '@/config/workflow-labels';
+import { appRoutes } from '@/content/routes';
+import { Link } from 'wouter';
 
 type RequestDetailViewProps = {
   data: RequestDetail;
@@ -48,6 +49,8 @@ type RequestDetailViewProps = {
   onDvsValidationChange: (id: string, checked: boolean) => void;
   onAction: (action: WorkflowAction) => void;
   onReasonSubmit: (action: WorkflowAction, event: FormEvent<HTMLFormElement>) => void;
+  dossierReviewed: boolean;
+  onDossierReviewedChange: (value: boolean) => void;
 };
 
 function formatDateTime(value: string | Date | null | undefined): string {
@@ -122,9 +125,85 @@ type RequestDetailActionsProps = {
   onReasonChange: (value: string) => void;
   onAction: (action: WorkflowAction) => void;
   onReasonSubmit: (action: WorkflowAction, event: FormEvent<HTMLFormElement>) => void;
+  canResubmit: boolean;
+  dossierReviewed: boolean;
 };
 
 const REASON_ACTIONS: WorkflowAction[] = ['reject', 'return_for_correction', 'revoke'];
+
+function correctionRemarks(data: RequestDetail): string | null {
+  if (data.decisionReason?.trim()) return data.decisionReason.trim();
+  const returned = data.history.find((entry) => entry.newStatus === 'returned_for_correction');
+  return returned?.reason?.trim() || null;
+}
+
+function RequestCorrectionReview({
+  data,
+  canConfirm,
+  reviewed,
+  onReviewedChange,
+}: {
+  data: RequestDetail;
+  canConfirm: boolean;
+  reviewed: boolean;
+  onReviewedChange: (value: boolean) => void;
+}) {
+  const remarks = correctionRemarks(data);
+
+  return (
+    <section
+      className="request-detail-section request-correction-review"
+      id="request-correction-review"
+      aria-labelledby="request-correction-heading"
+    >
+      <header className="request-detail-section-head">
+        <h3 id="request-correction-heading">Vérifier le dossier avant resoumission</h3>
+        <p>Relisez les remarques, contrôlez l’activité et les précisions, puis confirmez.</p>
+      </header>
+
+      <blockquote className="request-correction-remarks">
+        <strong>Remarques à corriger</strong>
+        {remarks ? (
+          <p>{remarks}</p>
+        ) : (
+          <p>Aucune remarque écrite n’accompagne ce renvoi. Contactez le service Voyage Découverte de la DVS.</p>
+        )}
+      </blockquote>
+
+      <dl className="request-correction-facts">
+        <div>
+          <dt>Activité</dt>
+          <dd>
+            {data.activityId ? (
+              <Link href={appRoutes.activities}>{data.activityTitle ?? 'Voir l’activité'}</Link>
+            ) : (
+              data.activityTitle ?? '—'
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>Établissement</dt>
+          <dd>{data.establishmentName}</dd>
+        </div>
+        <div>
+          <dt>Précisions du dossier</dt>
+          <dd>{data.description?.trim() || 'Aucune précision complémentaire renseignée.'}</dd>
+        </div>
+      </dl>
+
+      {canConfirm ? (
+        <label className="request-correction-confirm">
+          <input
+            type="checkbox"
+            checked={reviewed}
+            onChange={(event) => onReviewedChange(event.target.checked)}
+          />
+          <span>J’ai relu les remarques et vérifié ce dossier. Je peux le resoumettre.</span>
+        </label>
+      ) : null}
+    </section>
+  );
+}
 
 function RequestDetailActions({
   data,
@@ -136,6 +215,8 @@ function RequestDetailActions({
   onReasonChange,
   onAction,
   onReasonSubmit,
+  canResubmit,
+  dossierReviewed,
 }: RequestDetailActionsProps) {
   const actorKind = profile ? getRequestActorKind(profile.primaryRoleCode) : undefined;
   const primaryActions = sortWorkflowActions(
@@ -146,7 +227,10 @@ function RequestDetailActions({
 
   function isActionDisabled(action: WorkflowAction): boolean {
     if (isPending) return true;
-    if ((action === 'submit' || action === 'resubmit') && !isChecklistComplete(checklistDraft)) {
+    if (action === 'resubmit' && (!dossierReviewed || !isChecklistComplete(checklistDraft))) {
+      return true;
+    }
+    if (action === 'submit' && !isChecklistComplete(checklistDraft)) {
       return true;
     }
     if (action === 'approve' && !isDvsValidationComplete(dvsValidationDraft)) {
@@ -189,6 +273,11 @@ function RequestDetailActions({
                   WORKFLOW_ACTION_LABELS[action]
                 )}
               </button>
+              {action === 'resubmit' && canResubmit && !dossierReviewed ? (
+                <p className="request-detail-action-hint">
+                  Vérifiez d&apos;abord le dossier dans la section ci-contre.
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -253,22 +342,21 @@ export function RequestDetailView({
   onDvsValidationChange,
   onAction,
   onReasonSubmit,
+  dossierReviewed,
+  onDossierReviewedChange,
 }: RequestDetailViewProps) {
+  const canResubmit = data.allowedActions.includes('resubmit');
+  const needsCorrectionReview = data.status === 'returned_for_correction';
+
   return (
     <article className="request-detail-shell">
       <header className="request-detail-head">
-        <div className="request-detail-head-main">
-          <div className="request-detail-head-icon" aria-hidden="true">
-            <FileCheck size={26} strokeWidth={1.75} />
-          </div>
-          <div className="request-detail-head-copy">
-            <p className="request-detail-head-eyebrow">Dossier d&apos;autorisation</p>
-            <h2 className="request-detail-head-title">{data.activityTitle ?? 'Activité'}</h2>
-            <p className="request-detail-head-meta">
-              <Building2 size={14} aria-hidden="true" />
-              {data.establishmentName}
-            </p>
-          </div>
+        <div className="request-detail-head-copy">
+          <h2 className="request-detail-head-title">{data.activityTitle ?? 'Activité'}</h2>
+          <p className="request-detail-head-meta">
+            <Building2 size={14} aria-hidden="true" />
+            {data.establishmentName}
+          </p>
         </div>
         <span className={`${statusBadgeClass(data.status)} request-detail-status-badge`}>
           {REQUEST_STATUS_LABELS[data.status] ?? data.status}
@@ -279,6 +367,15 @@ export function RequestDetailView({
 
       <div className="request-detail-body">
         <div className="request-detail-main">
+          {needsCorrectionReview ? (
+            <RequestCorrectionReview
+              data={data}
+              canConfirm={canResubmit}
+              reviewed={dossierReviewed}
+              onReviewedChange={onDossierReviewedChange}
+            />
+          ) : null}
+
           <section className="request-detail-section" aria-labelledby="request-info-heading">
             <header className="request-detail-section-head">
               <h3 id="request-info-heading">Informations du dossier</h3>
@@ -381,6 +478,8 @@ export function RequestDetailView({
             onReasonChange={onReasonChange}
             onAction={onAction}
             onReasonSubmit={onReasonSubmit}
+            canResubmit={canResubmit}
+            dossierReviewed={dossierReviewed}
           />
         </aside>
       </div>

@@ -193,6 +193,215 @@
   gap: 0.85rem;
 }
 
+.activity-compose-dialog {
+  max-width: 34rem;
+  width: min(34rem, calc(100vw - 1.5rem));
+  padding: 1.25rem 1.35rem 1.4rem;
+  border-color: var(--pnigvs-border);
+  background: var(--pnigvs-surface);
+  color: var(--pnigvs-ink);
+}
+
+.activity-compose-success {
+  display: grid;
+  gap: 0.85rem;
+  justify-items: start;
+}
+
+.activity-compose-success svg {
+  color: var(--pnigvs-primary);
+}
+
+.activity-school-chip {
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--pnigvs-radius-pill);
+  background: var(--pnigvs-primary-muted);
+  color: var(--pnigvs-primary-dark);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.dash-form-block--bare {
+  padding: 0;
+}
+
+.activity-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.activity-stepper li {
+  flex: 1 1 4.6rem;
+  min-width: 0;
+}
+
+.activity-stepper button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.2rem 0.15rem;
+  border: 0;
+  background: none;
+  color: var(--pnigvs-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.activity-stepper button:disabled {
+  cursor: default;
+}
+
+.activity-stepper button span {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--pnigvs-border);
+  background: var(--pnigvs-surface);
+  font-size: 0.6875rem;
+  flex: none;
+}
+
+.activity-stepper li.is-done button {
+  color: var(--pnigvs-primary-dark);
+}
+
+.activity-stepper li.is-done button span {
+  border-color: var(--pnigvs-primary);
+  background: var(--pnigvs-primary);
+  color: var(--pnigvs-primary-foreground);
+}
+
+.activity-stepper li.is-current button {
+  color: var(--pnigvs-ink);
+}
+
+.activity-stepper li.is-current button span {
+  border-color: var(--pnigvs-primary);
+  background: var(--pnigvs-primary-muted);
+  color: var(--pnigvs-primary-dark);
+}
+
+.activity-type-grid {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.activity-type-grid legend {
+  margin-bottom: 0.55rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.activity-type-grid label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--pnigvs-border);
+  border-radius: var(--pnigvs-radius-lg);
+  background: var(--pnigvs-surface);
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.activity-type-grid label input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.activity-type-grid label:hover,
+.activity-type-grid label.is-selected {
+  border-color: var(--pnigvs-primary);
+  background: var(--pnigvs-primary-muted);
+}
+
+.activity-type-grid label svg {
+  color: var(--pnigvs-primary);
+}
+
+.activity-step-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: var(--pnigvs-muted);
+}
+
+.activity-input-icon {
+  position: relative;
+}
+
+.activity-input-icon svg {
+  position: absolute;
+  top: 50%;
+  left: 0.7rem;
+  transform: translateY(-50%);
+  color: var(--pnigvs-muted);
+  pointer-events: none;
+}
+
+.activity-input-icon input {
+  padding-left: 2.1rem;
+}
+
+.activity-recap {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.activity-recap div {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--pnigvs-border);
+  border-radius: var(--pnigvs-radius-lg);
+  background: color-mix(in srgb, var(--pnigvs-paper) 65%, var(--pnigvs-surface));
+}
+
+.activity-recap dt {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pnigvs-muted);
+}
+
+.activity-recap dd {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.activity-step-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.activity-step-actions .activity-create-submit {
+  width: auto;
+  min-width: 10.5rem;
+}
+
 .activity-create-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -319,8 +528,28 @@
 
 .activities-list-empty p {
   margin: 0;
-  max-width: 28ch;
+  max-width: 36ch;
   line-height: 1.45;
+}
+
+.activities-list-empty .dash-chip-btn {
+  margin-top: 0.45rem;
+}
+
+.dash-surface > .dash-filter-hint {
+  margin: 0;
+  padding: 0.15rem 1rem 0.85rem;
+}
+
+.activities-filter-reset {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--pnigvs-primary);
+  font: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .activities-list-state--error {
@@ -349,6 +578,23 @@
 }
 
 @media (max-width: 768px) {
+  .activity-stepper button {
+    justify-content: center;
+    font-size: 0;
+  }
+
+  .activity-stepper button span {
+    font-size: 0.6875rem;
+  }
+
+  .activity-step-actions {
+    flex-wrap: wrap;
+  }
+
+  .activity-step-actions .activity-create-submit {
+    width: 100%;
+  }
+
   .activity-create-form-grid {
     grid-template-columns: 1fr;
   }

@@ -4,7 +4,7 @@ import { Link } from 'wouter';
 import { institution } from '@/config/institution';
 
 type InstitutionBrandProps = {
-  variant?: 'public' | 'app-sidebar';
+  variant?: 'public' | 'app-sidebar' | 'app-top';
   href?: string;
   className?: string;
   title?: string;
@@ -22,31 +22,41 @@ export function InstitutionBrand({
     title ??
     `${institution.ministry.fullName} — ${institution.direction.fullName} — ${institution.platform.fullName}`;
 
-  const content: ReactNode = (
-    <>
-      <span className="brand-mark" aria-hidden="true" />
-      <span className="institution-brand-text">
-        {institution.ministry.brandLines.map((line, index) => (
-          <span key={line}>
-            {line}
-            {index < institution.ministry.brandLines.length - 1 ? <br /> : null}
-          </span>
-        ))}
-        {variant === 'public' ? (
-          <small>{institution.motto}</small>
-        ) : (
-          <small>
-            {institution.direction.shortName} · {institution.platform.name}
-          </small>
-        )}
-      </span>
-    </>
-  );
+  const content: ReactNode =
+    variant === 'app-top' ? (
+      <>
+        <span className="brand-mark" aria-hidden="true" />
+        <span className="institution-brand-text">
+          <small>{institution.platform.name}</small>
+        </span>
+      </>
+    ) : (
+      <>
+        <span className="brand-mark" aria-hidden="true" />
+        <span className="institution-brand-text">
+          {institution.ministry.brandLines.map((line, index) => (
+            <span key={line}>
+              {line}
+              {index < institution.ministry.brandLines.length - 1 ? <br /> : null}
+            </span>
+          ))}
+          {variant === 'public' ? (
+            <small>{institution.motto}</small>
+          ) : (
+            <small>
+              {institution.direction.shortName} · {institution.platform.name}
+            </small>
+          )}
+        </span>
+      </>
+    );
 
   const rootClass =
     variant === 'app-sidebar'
       ? `app-pro-brand-link institution-brand institution-brand--sidebar${className ? ` ${className}` : ''}`
-      : `brand institution-brand institution-brand--public${className ? ` ${className}` : ''}`;
+      : variant === 'app-top'
+        ? `dash-brand institution-brand institution-brand--top${className ? ` ${className}` : ''}`
+        : `brand institution-brand institution-brand--public${className ? ` ${className}` : ''}`;
 
   if (href) {
     return (

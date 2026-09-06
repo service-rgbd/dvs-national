@@ -330,7 +330,10 @@ export const GetAppDashboardResponse = zod.object({
   "scopeLabel": zod.string(),
   "regionId": zod.string().uuid().nullish(),
   "drenaId": zod.string().uuid().nullish(),
-  "establishmentId": zod.string().uuid().nullish()
+  "establishmentId": zod.string().uuid().nullish(),
+  "drenaName": zod.string().nullish(),
+  "drenaContactName": zod.string().nullish(),
+  "drenaContactEmail": zod.string().email().nullish()
 }),
   "kpis": zod.object({
   "establishments": zod.number().int().min(getAppDashboardResponseKpisEstablishmentsMin),

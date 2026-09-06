@@ -85,6 +85,9 @@
   --pnigvs-radius-sm: 0.25rem;
   --pnigvs-radius-md: 0.375rem;
   --pnigvs-radius-lg: 0.5rem;
+  --pnigvs-radius-xl: 1.25rem;
+  --pnigvs-radius-2xl: 1.75rem;
+  --pnigvs-radius-pill: 999px;
 
   /* États sémantiques */
   --pnigvs-success: var(--pnigvs-primary);

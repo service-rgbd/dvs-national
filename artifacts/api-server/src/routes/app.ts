@@ -34,6 +34,9 @@ router.get("/app/dashboard", requireAuth, async (req, res, next) => {
         regionId: dashboard.profile.regionId ?? null,
         drenaId: dashboard.profile.drenaId ?? null,
         establishmentId: dashboard.profile.establishmentId ?? null,
+        drenaName: dashboard.profile.drenaName ?? null,
+        drenaContactName: dashboard.profile.drenaContactName ?? null,
+        drenaContactEmail: dashboard.profile.drenaContactEmail ?? null,
       },
       kpis: dashboard.kpis,
     });

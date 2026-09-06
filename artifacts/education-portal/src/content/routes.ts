@@ -32,6 +32,7 @@ export const appRoutes = {
   adminSettings: '/app/administration/parametres',
   adminAudit: '/app/administration/journal',
   profile: '/app/profil',
+  notifications: '/app/notifications',
   requestDetail: (id: string) => `/app/demandes/${id}`,
   mediaPublicationDetail: (id: string) => `/app/publications-medias/${id}`,
   establishmentDetail: (id: string) => `/app/etablissements/${id}`,

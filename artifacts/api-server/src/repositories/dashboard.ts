@@ -5,6 +5,9 @@ import {
   db,
   establishments,
   requests,
+  roles,
+  userRoles,
+  users,
 } from "@workspace/db";
 
 import type { AuthenticatedUser } from "./auth";
@@ -73,8 +76,21 @@ async function countRequests(scope: UserScope, statuses: string[]): Promise<numb
   return Number(row?.total ?? 0);
 }
 
+async function getDrenaContact(drenaId: string) {
+  const [row] = await db
+    .select({ fullName: users.fullName, email: users.email })
+    .from(userRoles)
+    .innerJoin(roles, eq(userRoles.roleId, roles.id))
+    .innerJoin(users, eq(userRoles.userId, users.id))
+    .where(and(eq(roles.code, "drena_manager"), eq(userRoles.drenaId, drenaId)))
+    .limit(1);
+
+  return row ?? null;
+}
+
 export async function getAppDashboard(user: AuthenticatedUser): Promise<AppDashboard> {
   const profile = await getUserScope(user);
+  const contact = profile.drenaId ? await getDrenaContact(profile.drenaId) : null;
 
   const [establishmentsTotal, activitiesTotal, requestsPending, requestsUnderReview] =
     await Promise.all([
@@ -85,7 +101,11 @@ export async function getAppDashboard(user: AuthenticatedUser): Promise<AppDashb
     ]);
 
   return {
-    profile,
+    profile: {
+      ...profile,
+      drenaContactName: contact?.fullName,
+      drenaContactEmail: contact?.email,
+    },
     kpis: {
       establishments: establishmentsTotal,
       activities: activitiesTotal,

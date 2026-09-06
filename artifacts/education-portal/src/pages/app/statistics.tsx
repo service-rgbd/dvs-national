@@ -1,17 +1,17 @@
 import { FormEvent, useState } from 'react';
-import { Building2, CalendarDays, ClipboardList, Download, FolderOpen, Loader2 } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { AppPage } from '@/components/app/AppPage';
-import { DashStatBar } from '@/components/app/dashboard/DashStatBar';
+import { PilotageKpiBand } from '@/components/app/dashboard/PilotageKpiBand';
+import { StatisticsCharts } from '@/components/app/StatisticsCharts';
 import { AppProEmpty } from '@/components/app/pro/AppProEmpty';
 import { AppProLoading } from '@/components/app/pro/AppProLoading';
 import { AppProPageShell } from '@/components/app/pro/AppProPageShell';
-import { AppProPanel } from '@/components/app/pro/AppProPanel';
-import { StatisticsCharts } from '@/components/app/StatisticsCharts';
-import { Button } from '@/components/ui/button';
+import { DashSurface } from '@/components/dash/DashSurface';
 import { REPORT_TYPE_LABELS, reportTypes, type ReportType } from '@/config/report-labels';
 import { invalidateDocuments, invalidateReports } from '@/lib/query-sync';
+import '@/styles/statistics.css';
 import {
   useAuthMe,
   useGenerateReport,
@@ -58,8 +58,8 @@ export default function AppStatisticsPage() {
 
   return (
     <AppPage
-      title="Statistiques & rapports"
-      description="Indicateurs, graphiques et exports de pilotage — périmètre DVS / DREN."
+      title="Statistiques"
+      description="Indicateurs et exports de pilotage — périmètre DVS / DREN."
       action={
         <div className="dash-period-picker" aria-label="Période affichée">
           <span>Période</span>
@@ -75,7 +75,7 @@ export default function AppStatisticsPage() {
             title="Chargement impossible"
             description="Les statistiques métier sont indisponibles."
             action={
-              <button type="button" className="btn-secondary" onClick={() => refetch()}>
+              <button type="button" className="dash-chip-btn" onClick={() => refetch()}>
                 Réessayer
               </button>
             }
@@ -84,96 +84,115 @@ export default function AppStatisticsPage() {
 
         {data && !isLoading ? (
           <>
-            <DashStatBar
+            <PilotageKpiBand
               items={[
-                { label: 'Établissements', value: data.kpis.establishments, icon: Building2 },
-                { label: 'Activités', value: data.kpis.activities, icon: CalendarDays },
-                { label: 'Demandes en attente', value: data.kpis.requestsPending, icon: ClipboardList },
-                { label: 'En analyse DVS/DREN', value: data.kpis.requestsUnderReview, icon: FolderOpen },
+                {
+                  id: 'buildings',
+                  icon: 'buildings',
+                  label: 'Établissements',
+                  value: data.kpis.establishments,
+                  hint: 'Référentiel du périmètre',
+                },
+                {
+                  id: 'activities',
+                  icon: 'activities',
+                  label: 'Activités',
+                  value: data.kpis.activities,
+                  hint: 'Sorties et événements',
+                },
+                {
+                  id: 'inbox',
+                  icon: 'inbox',
+                  label: 'En attente',
+                  value: data.kpis.requestsPending,
+                  hint: 'Dossiers soumis, non encore instruits',
+                },
+                {
+                  id: 'review',
+                  icon: 'review',
+                  label: 'En analyse',
+                  value: data.kpis.requestsUnderReview,
+                  hint: 'Instruction DREN ou DVS',
+                },
               ]}
             />
 
-            <AppProPanel title="Répartitions graphiques" headingId="charts-heading">
-              <StatisticsCharts
-                requestsByStatus={data.requestsByStatus}
-                activitiesByType={data.activitiesByType}
-              />
-            </AppProPanel>
+            <StatisticsCharts
+              requestsByStatus={data.requestsByStatus}
+              activitiesByType={data.activitiesByType}
+            />
           </>
         ) : null}
 
-        <div className="dash-workspace">
-          <div className="dash-workspace-main">
-            <AppProPanel title="Générer un rapport" headingId="reports-generate-heading">
+        <div className="stats-reports">
+          <DashSurface>
+            <section className="stats-panel" aria-labelledby="reports-generate-heading">
+              <header className="stats-panel-head">
+                <h2 id="reports-generate-heading">Générer un rapport</h2>
+                <p>Export JSON des indicateurs, déposé dans les fichiers scolaires.</p>
+              </header>
+
               {canGenerateReports ? (
-                <form className="app-pro-form app-pro-form-compact" onSubmit={handleGenerate}>
-                  <div className="form-field">
-                    <label htmlFor="report-type">Type de rapport</label>
-                    <select
-                      id="report-type"
-                      className="app-pro-select"
-                      value={reportType}
-                      onChange={(event) => setReportType(event.target.value as ReportType)}
-                    >
-                      {reportTypes.map((type) => (
-                        <option key={type} value={type}>
-                          {REPORT_TYPE_LABELS[type]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <p className="app-pro-muted">
-                    Export JSON des indicateurs de votre périmètre, enregistré dans les fichiers scolaires.
-                  </p>
-                  <Button type="submit" disabled={generateReport.isPending} className="app-pro-submit">
+                <form className="stats-report-form" onSubmit={handleGenerate}>
+                  <label htmlFor="report-type">Type de rapport</label>
+                  <select
+                    id="report-type"
+                    value={reportType}
+                    onChange={(event) => setReportType(event.target.value as ReportType)}
+                  >
+                    {reportTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {REPORT_TYPE_LABELS[type]}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="submit" className="dash-chip-btn" disabled={generateReport.isPending}>
                     {generateReport.isPending ? (
                       <>
-                        <Loader2 className="animate-spin" aria-hidden="true" /> Génération…
+                        <Loader2 className="animate-spin" size={14} aria-hidden="true" />
+                        Génération…
                       </>
                     ) : (
                       'Générer le rapport'
                     )}
-                  </Button>
+                  </button>
                 </form>
               ) : (
-                <p className="app-pro-muted">La génération de rapports est réservée aux profils DVS.</p>
+                <p className="stats-muted">La génération de rapports est réservée aux profils DVS.</p>
               )}
-            </AppProPanel>
-          </div>
+            </section>
+          </DashSurface>
 
-          <div className="dash-workspace-aside">
-            <AppProPanel
-              title="Rapports générés"
-              headingId="reports-heading"
-              action={<span className="app-pro-count">{reports.length} rapport(s)</span>}
-            >
+          <DashSurface>
+            <section className="stats-panel" aria-labelledby="reports-heading">
+              <header className="stats-panel-head">
+                <h2 id="reports-heading">Rapports générés</h2>
+                <p>{reports.length.toLocaleString('fr-FR')} export{reports.length > 1 ? 's' : ''} récent{reports.length > 1 ? 's' : ''}.</p>
+              </header>
+
               {reportsLoading ? <AppProLoading label="Chargement des rapports…" inline /> : null}
 
               {!reportsLoading && reports.length === 0 ? (
-                <AppProEmpty
-                  title="Aucun rapport enregistré"
-                  description="Générez un rapport mensuel, annuel ou régional pour obtenir un export."
-                />
+                <p className="stats-muted">Aucun rapport enregistré pour le moment.</p>
               ) : null}
 
               {reports.length > 0 ? (
-                <ul className="app-pro-data-list">
+                <ul className="stats-report-list">
                   {reports.map((report) => (
-                    <li key={report.id} className="app-pro-data-item">
+                    <li key={report.id}>
                       <div>
                         <strong>{REPORT_TYPE_LABELS[report.type as ReportType] ?? report.type}</strong>
-                        <p>
+                        <span>
                           {formatReportDate(report.periodStart)} → {formatReportDate(report.periodEnd)}
-                        </p>
-                        {report.documentTitle ? <p className="app-pro-muted">{report.documentTitle}</p> : null}
+                        </span>
                       </div>
                       {report.documentId ? (
                         <a
-                          className="document-download-btn"
+                          className="dash-chip-btn"
                           href={`/api/documents/${report.documentId}/download`}
                           download
                         >
-                          <Download aria-hidden="true" />
+                          <Download size={14} aria-hidden="true" />
                           Télécharger
                         </a>
                       ) : null}
@@ -181,8 +200,8 @@ export default function AppStatisticsPage() {
                   ))}
                 </ul>
               ) : null}
-            </AppProPanel>
-          </div>
+            </section>
+          </DashSurface>
         </div>
       </AppProPageShell>
     </AppPage>

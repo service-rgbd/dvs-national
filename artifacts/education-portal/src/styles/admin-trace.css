@@ -1,0 +1,258 @@
+/**
+ * Traçabilité admin — activités ↔ dossiers d'autorisation.
+ */
+
+.admin-trace {
+  display: grid;
+}
+
+.admin-trace-head,
+.admin-trace-toolbar,
+.admin-trace-table-wrap {
+  padding: 1.1rem 1.25rem;
+}
+
+.admin-trace-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.85rem 1.25rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--pnigvs-border) 80%, transparent);
+}
+
+.admin-trace-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.admin-trace-head p {
+  margin: 0.3rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--pnigvs-muted);
+}
+
+.admin-trace-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pnigvs-muted);
+}
+
+.admin-trace-stats strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 750;
+  color: var(--pnigvs-ink);
+}
+
+.admin-trace-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.65rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--pnigvs-border) 70%, transparent);
+}
+
+.admin-trace-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-trace-filters button {
+  min-height: 1.85rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--pnigvs-border);
+  border-radius: var(--pnigvs-radius-pill);
+  background: var(--pnigvs-surface);
+  color: var(--pnigvs-ink);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.admin-trace-filters button.is-active {
+  background: var(--pnigvs-primary);
+  border-color: var(--pnigvs-primary);
+  color: var(--pnigvs-primary-foreground);
+}
+
+.admin-trace-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 14rem;
+  flex: 1 1 14rem;
+  padding: 0 0.7rem;
+  min-height: 2.1rem;
+  border: 1px solid var(--pnigvs-border);
+  border-radius: var(--pnigvs-radius-pill);
+  background: var(--surface-secondary);
+  color: var(--pnigvs-muted);
+}
+
+.admin-trace-search input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--pnigvs-ink);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+
+.admin-trace-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.admin-trace-table th,
+.admin-trace-table td {
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid color-mix(in srgb, var(--pnigvs-border) 55%, transparent);
+}
+
+.admin-trace-table th {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pnigvs-muted);
+}
+
+.admin-trace-kind {
+  display: inline-flex;
+  min-height: 1.4rem;
+  align-items: center;
+  padding: 0 0.5rem;
+  border-radius: var(--pnigvs-radius-pill);
+  background: var(--surface-secondary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.admin-trace-kind--activity {
+  color: var(--pnigvs-primary-dark);
+  background: var(--pnigvs-primary-muted);
+}
+
+.admin-trace-kind--request {
+  color: var(--pnigvs-ink);
+}
+
+.admin-trace-kind--submitted,
+.admin-trace-kind--decision {
+  color: var(--pnigvs-accent-dark);
+  background: var(--pnigvs-accent-light);
+}
+
+.admin-trace-title {
+  display: block;
+  font-weight: 650;
+}
+
+.admin-trace-detail {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--pnigvs-muted);
+}
+
+.admin-trace-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+}
+
+.admin-trace-links a {
+  color: var(--pnigvs-primary-dark);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.admin-trace-links a:hover {
+  text-decoration: underline;
+}
+
+.admin-trace-empty {
+  margin: 0;
+  padding: 1.25rem;
+  color: var(--pnigvs-muted);
+  font-size: 0.875rem;
+}
+
+.admin-trace-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--pnigvs-border) 80%, transparent);
+  border-radius: var(--pnigvs-radius-2xl);
+  background: var(--pnigvs-surface);
+}
+
+.admin-trace-kicker {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pnigvs-primary);
+}
+
+.admin-trace-summary strong {
+  display: block;
+  margin: 0.1rem 0 0.15rem;
+  font-size: 0.9rem;
+}
+
+.admin-trace-summary p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pnigvs-muted);
+}
+
+@media (max-width: 768px) {
+  .admin-trace-head,
+  .admin-trace-toolbar {
+    padding: 0.95rem;
+  }
+
+  .admin-trace-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-trace-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem 1rem;
+  }
+
+  .admin-trace-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-trace-search {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-trace-filters {
+    width: 100%;
+  }
+
+  .admin-trace-filters button {
+    flex: 1 1 calc(50% - 0.2rem);
+  }
+}

@@ -15,6 +15,7 @@ export type AppModuleId =
 export type AppModule = {
   id: AppModuleId;
   label: string;
+  shortLabel?: string;
   href: string;
   description: string;
   roles: UserProfileId[] | 'all';
@@ -25,6 +26,7 @@ export const appModules: AppModule[] = [
   {
     id: 'dashboard',
     label: 'Tableau de bord',
+    shortLabel: 'Pilotage',
     href: appRoutes.app,
     description: 'Vue d\'ensemble de votre périmètre.',
     roles: 'all',
@@ -46,6 +48,7 @@ export const appModules: AppModule[] = [
   {
     id: 'activities',
     label: 'Activités scolaires',
+    shortLabel: 'Activités',
     href: appRoutes.activities,
     description: 'Planification et suivi des activités.',
     roles: [
@@ -60,6 +63,7 @@ export const appModules: AppModule[] = [
   {
     id: 'requests',
     label: 'Demandes d\'autorisation',
+    shortLabel: 'Demandes',
     href: appRoutes.requests,
     description: 'Workflow Établissement → DREN → DVS.',
     roles: [
@@ -74,6 +78,7 @@ export const appModules: AppModule[] = [
   {
     id: 'mediaPublications',
     label: 'Publications média',
+    shortLabel: 'Médias',
     href: appRoutes.mediaPublications,
     description: 'Photos et vidéos de sorties — validation avant publication publique.',
     roles: [
@@ -88,6 +93,7 @@ export const appModules: AppModule[] = [
   {
     id: 'documents',
     label: 'Fichiers scolaires',
+    shortLabel: 'Fichiers',
     href: appRoutes.documents,
     description: 'Dépôt et consultation des documents de vie scolaire.',
     roles: [
@@ -102,6 +108,7 @@ export const appModules: AppModule[] = [
   {
     id: 'statistics',
     label: 'Statistiques',
+    shortLabel: 'Stats',
     href: appRoutes.statistics,
     description: 'Indicateurs et rapports de vie scolaire.',
     roles: ['dvs_director', 'dvs_staff'],

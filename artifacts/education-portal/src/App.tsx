@@ -39,6 +39,7 @@ import AdminRolesPage from '@/pages/app/admin/roles';
 import AdminSettingsPage from '@/pages/app/admin/settings';
 import AdminAuditPage from '@/pages/app/admin/audit-log';
 import AppProfilePage from '@/pages/app/profile';
+import AppNotificationsPage from '@/pages/app/notifications';
 import NotFound from '@/pages/not-found';
 import { appRoutes, publicRoutes } from '@/content/routes';
 import type { AppModuleId } from '@/config/app-modules';
@@ -106,6 +107,7 @@ function appRouteElements() {
     <Route key="app-admin-accounts" path={appRoutes.adminAccounts} component={withAppModule('administration', AdminAccountsPage)} />,
     <Route key="app-administration" path={appRoutes.administration} component={withAppModule('administration', AppAdministrationPage)} />,
     <Route key="app-profile" path={appRoutes.profile} component={withAppModule('profile', AppProfilePage)} />,
+    <Route key="app-notifications" path={appRoutes.notifications} component={withAppModule(null, AppNotificationsPage)} />,
     <Route key="app-dashboard" path={appRoutes.app} component={withAppModule(null, AppDashboardPage)} />,
   ];
 }

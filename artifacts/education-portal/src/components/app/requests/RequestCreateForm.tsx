@@ -3,7 +3,6 @@ import { FilePlus2, Loader2 } from 'lucide-react';
 import { Link } from 'wouter';
 import type { ActivitySummary } from '@workspace/api-client-react';
 
-import { AppProPanel } from '@/components/app/pro/AppProPanel';
 import { Button } from '@/components/ui/button';
 import { appRoutes } from '@/content/routes';
 
@@ -29,12 +28,12 @@ export function RequestCreateForm({
   const hasActivities = activities.length > 0;
 
   return (
-    <AppProPanel
-      title="Étape 2 — Créer le dossier"
-      headingId="create-request-heading"
-      className="request-create-panel"
-    >
-      <form className="app-pro-form request-create-form" onSubmit={onSubmit}>
+    <div className="dash-form-block">
+      <header className="dash-form-head">
+        <h2 id="create-request-heading">Nouveau dossier</h2>
+        <p>Liez une activité, puis soumettez depuis le détail.</p>
+      </header>
+      <form className="app-pro-form request-create-form" onSubmit={onSubmit} aria-labelledby="create-request-heading">
         <div className="form-field">
           <label htmlFor="request-activity">Activité concernée</label>
           <select
@@ -70,9 +69,9 @@ export function RequestCreateForm({
 
         {!hasActivities ? (
           <p className="request-create-hint">
-            Commencez par l&apos;{' '}
+            Aucune activité.{' '}
             <Link href={appRoutes.activities} className="request-create-hint-link">
-              étape 1 — Activités scolaires
+              Créer une activité
             </Link>
             .
           </p>
@@ -94,6 +93,6 @@ export function RequestCreateForm({
           )}
         </Button>
       </form>
-    </AppProPanel>
+    </div>
   );
 }

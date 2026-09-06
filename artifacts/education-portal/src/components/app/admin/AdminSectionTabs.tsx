@@ -18,8 +18,11 @@ export function AdminSectionTabs() {
             aria-current={isActive ? 'page' : undefined}
             title={section.description}
           >
-            <Icon size={15} aria-hidden="true" />
-            <span>{section.label}</span>
+            <span className="admin-section-tab-icon" aria-hidden="true">
+              <Icon size={16} />
+            </span>
+            <span className="admin-section-tab-label">{section.label}</span>
+            <span className="admin-section-tab-short">{section.shortLabel}</span>
           </Link>
         );
       })}

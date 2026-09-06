@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 
-import { db, drena, roles, userRoles } from "@workspace/db";
+import { db, drena, establishments, roles, userRoles } from "@workspace/db";
 
 import { getPrimaryRoleCode } from "../lib/role-priority";
 import type { AuthenticatedUser } from "./auth";
@@ -12,6 +12,9 @@ export type UserScope = {
   roleCodes: string[];
   regionId?: string;
   drenaId?: string;
+  drenaName?: string;
+  drenaContactName?: string;
+  drenaContactEmail?: string;
   establishmentId?: string;
 };
 
@@ -30,10 +33,12 @@ async function loadUserRoleRows(userId: string) {
       drenaId: userRoles.drenaId,
       drenaName: drena.name,
       establishmentId: userRoles.establishmentId,
+      establishmentName: establishments.name,
     })
     .from(userRoles)
     .innerJoin(roles, eq(userRoles.roleId, roles.id))
     .leftJoin(drena, eq(userRoles.drenaId, drena.id))
+    .leftJoin(establishments, eq(userRoles.establishmentId, establishments.id))
     .where(eq(userRoles.userId, userId));
 }
 
@@ -50,12 +55,24 @@ export async function getUserScope(user: AuthenticatedUser): Promise<UserScope> 
     roleRows.find((row) => row.regionId);
 
   let scopeLabel = "Périmètre national";
+  let drenaId = scopedRow?.drenaId ?? undefined;
+  let drenaName = scopedRow?.drenaName ?? undefined;
 
   if (scopedRow?.establishmentId) {
-    scopeLabel = "Établissement assigné";
-  } else if (scopedRow?.drenaName) {
-    scopeLabel = scopedRow.drenaName;
-  } else if (scopedRow?.drenaId) {
+    scopeLabel = scopedRow.establishmentName ?? "Votre établissement";
+    if (!drenaId) {
+      const [fromSchool] = await db
+        .select({ drenaId: establishments.drenaId, drenaName: drena.name })
+        .from(establishments)
+        .innerJoin(drena, eq(establishments.drenaId, drena.id))
+        .where(eq(establishments.id, scopedRow.establishmentId))
+        .limit(1);
+      drenaId = fromSchool?.drenaId;
+      drenaName = fromSchool?.drenaName ?? drenaName;
+    }
+  } else if (drenaName) {
+    scopeLabel = drenaName;
+  } else if (drenaId) {
     scopeLabel = "Périmètre DRENA";
   } else if (isNationalRole(roleCodes)) {
     scopeLabel = "Périmètre national";
@@ -69,7 +86,8 @@ export async function getUserScope(user: AuthenticatedUser): Promise<UserScope> 
     scopeLabel,
     roleCodes,
     regionId: scopedRow?.regionId ?? undefined,
-    drenaId: scopedRow?.drenaId ?? undefined,
+    drenaId,
+    drenaName,
     establishmentId: scopedRow?.establishmentId ?? undefined,
   };
 }

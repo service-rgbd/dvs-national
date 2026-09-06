@@ -9,6 +9,7 @@ import { buildTransitionPayload } from '@/components/app/requests/RequestVoyageD
 import { AppProEmpty } from '@/components/app/pro/AppProEmpty';
 import { AppProLoading } from '@/components/app/pro/AppProLoading';
 import { AppProPageShell } from '@/components/app/pro/AppProPageShell';
+import { DashSurface } from '@/components/dash/DashSurface';
 import { appRoutes } from '@/content/routes';
 import {
   findRequestSummaryInCache,
@@ -55,6 +56,7 @@ export default function AppRequestDetailPage() {
   const [dvsValidationDraft, setDvsValidationDraft] = useState(emptyDvsValidationState());
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [dossierReviewed, setDossierReviewed] = useState(false);
 
   const { data: dashboardData } = useGetAppDashboard(liveQueryHookOptions());
   const { data, isLoading, isError, isFetching, refetch } = useGetRequestById(requestId, {
@@ -76,7 +78,8 @@ export default function AppRequestDetailPage() {
     if (!data) return;
     setChecklistDraft(mergeBooleanRecord(data.checklist, emptyChecklistState()));
     setDvsValidationDraft(mergeBooleanRecord(data.dvsValidation, emptyDvsValidationState()));
-  }, [data?.id, data?.updatedAt]);
+    setDossierReviewed(false);
+  }, [data?.id, data?.status]);
 
   const transition = useTransitionRequest({
     mutation: {
@@ -121,6 +124,9 @@ export default function AppRequestDetailPage() {
   });
 
   function validateBeforeAction(action: WorkflowAction): string | null {
+    if (action === 'resubmit' && !dossierReviewed) {
+      return 'Relisez et confirmez la vérification du dossier avant de le resoumettre.';
+    }
     if ((action === 'submit' || action === 'resubmit') && !isChecklistComplete(checklistDraft)) {
       return 'Cochez les deux cases de la checklist Voyage Découverte avant de soumettre.';
     }
@@ -201,22 +207,18 @@ export default function AppRequestDetailPage() {
 
   return (
     <AppPage
-      title="Dossier de demande"
-      description={`${data.establishmentName} — ${data.activityTitle ?? 'Activité'}`}
-      breadcrumb={[
-        { label: 'Demandes', href: appRoutes.requests },
-        { label: data.activityTitle ?? 'Dossier' },
-      ]}
+      title={data.activityTitle ?? 'Dossier'}
+      description={data.establishmentName}
       action={
-        <Link href={appRoutes.requests} className="dash-panel-link app-pro-header-action">
-          <ArrowLeft size={14} aria-hidden="true" /> Retour aux demandes
+        <Link href={appRoutes.requests} className="dash-chip-btn">
+          <ArrowLeft size={14} aria-hidden="true" /> Demandes
         </Link>
       }
     >
       <AppProPageShell>
         {isHydratingDetail ? (
           <p className="request-detail-sync" role="status" aria-live="polite">
-            Chargement du détail du dossier…
+            Chargement du détail…
           </p>
         ) : null}
         {actionError ? (
@@ -229,23 +231,27 @@ export default function AppRequestDetailPage() {
             {actionSuccess}
           </p>
         ) : null}
-        <RequestDetailView
-          data={data}
-          profile={dashboardData?.profile}
-          isPending={transition.isPending}
-          checklistDraft={checklistDraft}
-          dvsValidationDraft={dvsValidationDraft}
-          onChecklistChange={(id, checked) =>
-            setChecklistDraft((current) => ({ ...current, [id]: checked }))
-          }
-          onDvsValidationChange={(id, checked) =>
-            setDvsValidationDraft((current) => ({ ...current, [id]: checked }))
-          }
-          reason={reason}
-          onReasonChange={setReason}
-          onAction={runAction}
-          onReasonSubmit={handleReasonSubmit}
-        />
+        <DashSurface>
+          <RequestDetailView
+            data={data}
+            profile={dashboardData?.profile}
+            isPending={transition.isPending}
+            checklistDraft={checklistDraft}
+            dvsValidationDraft={dvsValidationDraft}
+            onChecklistChange={(id, checked) =>
+              setChecklistDraft((current) => ({ ...current, [id]: checked }))
+            }
+            onDvsValidationChange={(id, checked) =>
+              setDvsValidationDraft((current) => ({ ...current, [id]: checked }))
+            }
+            reason={reason}
+            onReasonChange={setReason}
+            onAction={runAction}
+            onReasonSubmit={handleReasonSubmit}
+            dossierReviewed={dossierReviewed}
+            onDossierReviewedChange={setDossierReviewed}
+          />
+        </DashSurface>
       </AppProPageShell>
     </AppPage>
   );

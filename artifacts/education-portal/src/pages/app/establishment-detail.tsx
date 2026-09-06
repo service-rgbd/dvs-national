@@ -72,6 +72,7 @@ export default function AppEstablishmentDetailPage() {
   return (
     <AppPage
       title={data.name}
+      hideHeading
       breadcrumb={[
         { label: 'Établissements', href: appRoutes.establishments },
         { label: data.name },

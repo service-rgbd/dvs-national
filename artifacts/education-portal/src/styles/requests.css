@@ -1609,3 +1609,80 @@
   gap: 0.75rem;
   margin-top: 0.75rem;
 }
+
+.request-correction-review {
+  background: color-mix(in srgb, var(--pnigvs-accent-light) 55%, var(--pnigvs-surface));
+}
+
+.request-correction-remarks {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-left: 3px solid var(--pnigvs-accent);
+  border-radius: 0 0.65rem 0.65rem 0;
+  background: var(--pnigvs-surface);
+}
+
+.request-correction-remarks strong {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pnigvs-accent-dark);
+}
+
+.request-correction-remarks p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.request-correction-facts {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 0.9rem;
+}
+
+.request-correction-facts dt {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--pnigvs-muted);
+}
+
+.request-correction-facts dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.request-correction-facts a {
+  color: var(--pnigvs-primary-dark);
+  font-weight: 650;
+}
+
+.request-correction-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--pnigvs-accent) 40%, transparent);
+  border-radius: var(--pnigvs-radius-xl);
+  background: var(--pnigvs-surface);
+  font-size: 0.875rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.request-correction-confirm input {
+  margin-top: 0.15rem;
+  accent-color: var(--pnigvs-primary);
+}
+
+.request-detail-action-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pnigvs-accent-dark);
+}

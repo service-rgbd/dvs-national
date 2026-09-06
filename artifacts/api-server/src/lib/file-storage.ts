@@ -9,20 +9,22 @@ export function getUploadDir(): string {
   return UPLOAD_DIR;
 }
 
-export function assertFileSize(sizeBytes: number): void {
+export function assertFileSize(sizeBytes: number, maxBytes = MAX_FILE_BYTES): void {
   if (sizeBytes <= 0) {
     throw new Error("Le fichier est vide.");
   }
-  if (sizeBytes > MAX_FILE_BYTES) {
-    throw new Error("Le fichier dépasse la taille maximale autorisée (5 Mo).");
+  if (sizeBytes > maxBytes) {
+    const maxMo = Math.round(maxBytes / (1024 * 1024));
+    throw new Error(`Le fichier dépasse la taille maximale autorisée (${maxMo} Mo).`);
   }
 }
 
 export async function saveBinaryFile(
   buffer: Buffer,
   fileName: string,
+  options?: { maxBytes?: number },
 ): Promise<{ storageKey: string; sizeBytes: number }> {
-  assertFileSize(buffer.byteLength);
+  assertFileSize(buffer.byteLength, options?.maxBytes ?? MAX_FILE_BYTES);
 
   const extension = path.extname(fileName) || ".bin";
   const storageKey = `${Date.now()}-${randomUUID()}${extension}`;

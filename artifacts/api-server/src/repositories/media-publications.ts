@@ -502,7 +502,9 @@ export async function createMediaPublication(
     validateFileInput(file, buffer);
 
     const { saveBinaryFile } = await import("../lib/file-storage");
-    const saved = await saveBinaryFile(buffer, file.fileName);
+    const saved = await saveBinaryFile(buffer, file.fileName, {
+      maxBytes: file.mediaType === "photo" ? MAX_PHOTO_BYTES : MAX_VIDEO_BYTES,
+    });
     await db.insert(mediaPublicationFiles).values({
       publicationId: created.id,
       mediaType: file.mediaType,

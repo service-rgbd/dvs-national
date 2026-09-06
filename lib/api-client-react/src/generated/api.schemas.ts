@@ -179,6 +179,9 @@ export interface AppDashboardProfile {
   regionId?: string | null;
   drenaId?: string | null;
   establishmentId?: string | null;
+  drenaName?: string | null;
+  drenaContactName?: string | null;
+  drenaContactEmail?: string | null;
 }
 
 export interface AppDashboardKpis {
