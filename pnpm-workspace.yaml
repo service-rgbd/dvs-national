@@ -73,6 +73,15 @@ onlyBuiltDependencies:
   - esbuild
   - msw
   - unrs-resolver
+  - workerd
+
+# pnpm 11+ (Render/corepack installs pnpm 12) ignores onlyBuiltDependencies.
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
+  msw: true
+  unrs-resolver: true
+  workerd: true
 
 overrides:
   # replit uses linux-x64 only, we can exclude all other platforms
