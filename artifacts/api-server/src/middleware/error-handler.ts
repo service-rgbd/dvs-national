@@ -17,6 +17,20 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     return;
   }
 
+  if (
+    (typeof err === 'object' && err && 'type' in err && err.type === 'entity.too.large') ||
+    (typeof err === 'object' && err && 'status' in err && err.status === 413)
+  ) {
+    res.status(413).json({
+      error: {
+        code: 'PAYLOAD_TOO_LARGE',
+        message:
+          'Les fichiers sont trop volumineux. Envoyez moins de photos, ou des fichiers de 10 Mo maximum.',
+      },
+    });
+    return;
+  }
+
   if (err instanceof ApiError) {
     res.status(err.statusCode).json({
       error: {

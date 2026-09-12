@@ -170,10 +170,37 @@ async function assertApprovedActivity(user: AuthenticatedUser, activityId: strin
   return { activity, requestId: approvedRequest.id };
 }
 
+function normalizeMimeType(fileName: string, mimeType: string): string {
+  const raw = mimeType.trim().toLowerCase();
+  if (raw === "image/jpg" || raw === "image/pjpeg") return "image/jpeg";
+  if (raw === "image/x-png") return "image/png";
+  if (PHOTO_MIME_TYPES.has(raw) || VIDEO_MIME_TYPES.has(raw)) return raw;
+
+  const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+  const fromExt: Record<string, string> = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    gif: "image/gif",
+    mp4: "video/mp4",
+    webm: "video/webm",
+    mov: "video/quicktime",
+  };
+  return fromExt[ext] ?? raw;
+}
+
+function decodeFileBuffer(fileContentBase64: string): Buffer {
+  const payload = fileContentBase64.includes(",")
+    ? fileContentBase64.slice(fileContentBase64.indexOf(",") + 1)
+    : fileContentBase64;
+  return Buffer.from(payload, "base64");
+}
+
 function validateFileInput(file: CreateMediaFileInput, buffer: Buffer) {
   if (file.mediaType === "photo") {
     if (!PHOTO_MIME_TYPES.has(file.mimeType)) {
-      throw badRequest(`Type photo non supporté : ${file.mimeType}`);
+      throw badRequest(`Type photo non supporté : ${file.mimeType || "inconnu"}`);
     }
     if (buffer.length > MAX_PHOTO_BYTES) {
       throw badRequest("Chaque photo ne doit pas dépasser 10 Mo.");
@@ -493,24 +520,35 @@ export async function createMediaPublication(
   if (!created) throw badRequest("Impossible de créer la publication.");
 
   for (const [index, file] of input.files.entries()) {
+    const mimeType = normalizeMimeType(file.fileName, file.mimeType);
+    const normalized = { ...file, mimeType };
     let buffer: Buffer;
     try {
-      buffer = Buffer.from(file.fileContentBase64, "base64");
+      buffer = decodeFileBuffer(file.fileContentBase64);
     } catch {
       throw badRequest("Contenu du fichier invalide.");
     }
-    validateFileInput(file, buffer);
+    if (!buffer.length) {
+      throw badRequest(`Le fichier « ${file.fileName} » est vide.`);
+    }
+    validateFileInput(normalized, buffer);
 
     const { saveBinaryFile } = await import("../lib/file-storage");
-    const saved = await saveBinaryFile(buffer, file.fileName, {
-      maxBytes: file.mediaType === "photo" ? MAX_PHOTO_BYTES : MAX_VIDEO_BYTES,
-    });
+    let saved: { storageKey: string; sizeBytes: number };
+    try {
+      saved = await saveBinaryFile(buffer, file.fileName, {
+        maxBytes: file.mediaType === "photo" ? MAX_PHOTO_BYTES : MAX_VIDEO_BYTES,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Enregistrement du fichier impossible.";
+      throw badRequest(message);
+    }
     await db.insert(mediaPublicationFiles).values({
       publicationId: created.id,
       mediaType: file.mediaType,
       storageKey: saved.storageKey,
       fileName: file.fileName.trim(),
-      mimeType: file.mimeType.trim(),
+      mimeType,
       sizeBytes: saved.sizeBytes,
       caption: file.caption?.trim() || null,
       sortOrder: index,
